@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Volcano Information</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .content-section {
+        @apply bg-gray-100 p-4 rounded-lg shadow-md flex flex-col items-center;
+      }
+      .content-section img {
+        /* For Kilauea tilt image */
+        @apply max-w-full h-auto rounded-md border border-gray-300;
+      }
+      .image-caption,
+      .video-caption {
+        @apply text-sm text-gray-600 mt-2;
+      }
+      .error-message {
+        @apply text-red-500 bg-red-100 p-3 rounded-md text-center;
+      }
+      .link-section {
+        @apply bg-blue-50 p-6 rounded-lg shadow-md;
+      }
+      .link-section h2 {
+        @apply text-xl font-semibold text-blue-700 mb-3;
+      }
+      .link-section p {
+        @apply text-gray-700 mb-2;
+      }
+      .link-section a.button-link {
+        @apply bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg inline-block no-underline;
+      }
+      .link-section a:not(.button-link) {
+        @apply text-blue-600 hover:text-blue-800 underline font-medium;
+      }
+
+      /* Styles for the video container and iframe */
+      .video-outer-container {
+        /* New: for the full-width video section background and vertical padding */
+        @apply bg-gray-100 shadow-md py-6; /* Vertical padding for the section */
+      }
+      .video-text-wrapper {
+        /* New: to constrain text within the full-width video section */
+        @apply container mx-auto max-w-4xl px-4;
+      }
+      .video-player-wrapper {
+        /* New: This will house the iframe and manage its aspect ratio. It will be full width. */
+        @apply relative w-full overflow-hidden;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio for a w-full container */
+        /* No max-width here, it will take the full width of .video-outer-container (which is screen width) */
+      }
+      .video-player-wrapper iframe {
+        @apply absolute top-0 left-0 w-full h-full border-none; /* Ensure it fills the wrapper, no border */
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 text-gray-800">
+    <!-- Removed p-4 md:p-8 from body, apply to containers if needed -->
+
+    <div class="container mx-auto max-w-4xl space-y-8 px-4 md:px-0 py-8">
+      <!-- Added padding here -->
+      <header class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-700">
+          Volcano Activity Information
+        </h1>
+      </header>
+
+      <section id="kilauea-tilt" class="content-section">
+        <!-- This remains constrained -->
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">
+          Kīlauea Tiltmeter Data (UWD-POC-TILT-week)
+        </h2>
+        <img
+          src="https://volcanoes.usgs.gov/vsc/captures/kilauea/UWD-POC-TILT-week.png"
+          alt="Kilauea UWD-POC-TILT-week"
+          onerror="this.parentElement.innerHTML += '<p class=\'error-message mt-2\'>Could not load Kilauea tiltmeter image.</p>'; this.remove();"
+        />
+        <p class="image-caption">Source: USGS Volcanoes</p>
+      </section>
+    </div>
+    <!-- Close the first max-width container -->
+
+    <!-- YouTube Video Section - Full Width -->
+    <section
+      id="youtube-video-fullwidth-section"
+      class="video-outer-container space-y-4"
+    >
+      <div class="video-text-wrapper">
+        <!-- Constrains H2 -->
+        <h2 class="text-xl font-semibold text-gray-700">
+          Kīlauea Volcano Video
+        </h2>
+      </div>
+
+      <div class="video-player-wrapper">
+        <!-- This will be full browser width -->
+        <iframe
+          src="https://www.youtube.com/embed/oG5zz9Sjw3E"
+          title="YouTube video player - Kilauea Volcano"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        >
+        </iframe>
+      </div>
+
+      <div class="video-text-wrapper">
+        <!-- Constrains caption -->
+        <p class="video-caption">
+          Example video of Kīlauea. You can change this in the HTML.
+        </p>
+      </div>
+    </section>
+
+    <!-- Re-open container for subsequent content -->
+    <div class="container mx-auto max-w-4xl space-y-8 px-4 md:px-0 py-8">
+      <!-- Added padding here -->
+      <section id="usgs-updates" class="link-section">
+        <h2 class="text-xl font-semibold text-blue-700 mb-3">
+          USGS Kīlauea Volcano Updates
+        </h2>
+        <p>
+          As a reminder, directly embedding live content from the USGS website
+          (or other external sites) into this page using client-side JavaScript
+          is generally not possible due to web browser security policies (CORS).
+        </p>
+        <p>
+          For the latest official updates on Kīlauea, please visit the USGS page
+          directly:
+        </p>
+        <p class="mt-4">
+          <a
+            href="https://www.usgs.gov/volcanoes/kilauea/volcano-updates"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="button-link"
+          >
+            View Kīlauea Volcano Updates on USGS.gov
+          </a>
+        </p>
+      </section>
+
+      <footer class="text-center mt-12 py-4 border-t border-gray-300">
+        <p class="text-sm text-gray-500">
+          This page displays publicly available information and links. For
+          official data, always refer to the source websites.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
