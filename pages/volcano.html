@@ -97,18 +97,31 @@
         </h2>
       </div>
 
-      <div class="video-player-wrapper">
-        <!-- This will be full browser width -->
-        <iframe
-          src="https://www.youtube.com/embed/oG5zz9Sjw3E"
-          title="YouTube video player - Kilauea Volcano"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen
-        >
-        </iframe>
-      </div>
+      <!-- This will be full browser width -->
+      <iframe
+        width="860"
+        height="615"
+        src="https://www.youtube.com/embed/oG5zz9Sjw3E"
+        title="YouTube video player - Kilauea Volcano"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      >
+      </iframe>
+
+      <!-- This will be full browser width -->
+      <iframe
+        width="860"
+        height="615"
+        src="https://www.youtube.com/embed/BqmpkUdMtyA"
+        title="YouTube video player - Kilauea Volcano"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      >
+      </iframe>
 
       <div class="video-text-wrapper">
         <!-- Constrains caption -->
@@ -125,15 +138,9 @@
         <h2 class="text-xl font-semibold text-blue-700 mb-3">
           USGS Kīlauea Volcano Updates
         </h2>
-        <p>
-          As a reminder, directly embedding live content from the USGS website
-          (or other external sites) into this page using client-side JavaScript
-          is generally not possible due to web browser security policies (CORS).
-        </p>
-        <p>
-          For the latest official updates on Kīlauea, please visit the USGS page
-          directly:
-        </p>
+        <div id="volcano-updates-content">
+          <p>Loading latest volcano updates...</p>
+        </div>
         <p class="mt-4">
           <a
             href="https://www.usgs.gov/volcanoes/kilauea/volcano-updates"
@@ -141,10 +148,38 @@
             rel="noopener noreferrer"
             class="button-link"
           >
-            View Kīlauea Volcano Updates on USGS.gov
+            View Full Updates on USGS.gov
           </a>
         </p>
       </section>
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          fetch("https://api.tczhong.com/backend/volcano_updates")
+            .then((response) => response.json())
+            .then((data) => {
+              const contentDiv = document.getElementById(
+                "volcano-updates-content"
+              );
+              contentDiv.innerHTML = `
+                <div class="bg-white p-4 rounded-md shadow-sm mb-4">
+                  <h3 class="font-bold text-lg mb-2">${new Date().toLocaleDateString()}</h3>
+                  <div class="whitespace-pre-line">${data.data}</div>
+                </div>
+              `;
+            })
+            .catch((error) => {
+              const contentDiv = document.getElementById(
+                "volcano-updates-content"
+              );
+              contentDiv.innerHTML = `
+                <div class="error-message">
+                  Failed to load updates. <a href="https://www.usgs.gov/volcanoes/kilauea/volcano-updates"
+                  target="_blank" class="underline">Check USGS website directly</a>
+                </div>
+              `;
+            });
+        });
+      </script>
 
       <footer class="text-center mt-12 py-4 border-t border-gray-300">
         <p class="text-sm text-gray-500">
