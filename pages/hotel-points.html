@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>酒店积分价值计算器</title>
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>酒店积分价值计算器</h1>
+
+      <div class="calculator">
+        <div class="input-group">
+          <label for="points">积分数量:</label>
+          <input type="number" id="points" placeholder="输入积分数量" />
+        </div>
+
+        <div class="input-group">
+          <label for="hotel">酒店集团:</label>
+          <select id="hotel">
+            <option value="hilton">Hilton (0.4美分/积分)</option>
+            <option value="hyatt">Hyatt (1.6美分/积分)</option>
+            <option value="marriott">Marriott (0.7美分/积分)</option>
+            <option value="ihg">IHG (0.5美分/积分)</option>
+          </select>
+        </div>
+
+        <button onclick="calculate()">计算</button>
+
+        <div id="result" class="result"></div>
+      </div>
+    </div>
+
+    <script>
+      function calculate() {
+        const points = parseInt(document.getElementById("points").value);
+        const hotel = document.getElementById("hotel").value;
+
+        if (isNaN(points) || points <= 0) {
+          alert("请输入有效的积分数量");
+          return;
+        }
+
+        let rate;
+        switch (hotel) {
+          case "hilton":
+            rate = 0.4;
+            break;
+          case "hyatt":
+            rate = 1.6;
+            break;
+          case "marriott":
+            rate = 0.7;
+            break;
+          case "ihg":
+            rate = 0.5;
+            break;
+        }
+
+        const value = ((points * rate) / 100).toFixed(2);
+        document.getElementById("result").innerHTML = `
+                <h3>计算结果</h3>
+                <p>${points} 积分 ≈ $${value} 美元</p>
+            `;
+      }
+    </script>
+  </body>
+</html>
