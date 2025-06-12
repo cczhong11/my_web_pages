@@ -7,6 +7,33 @@
     <link rel="stylesheet" href="../style.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <style>
+      .food-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+      }
+      .food-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .edit-btn,
+      .delete-btn {
+        padding: 4px 8px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .edit-btn {
+        background-color: #4caf50;
+        color: white;
+      }
+      .delete-btn {
+        background-color: #f44336;
+        color: white;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -334,12 +361,65 @@
             mealFoods.forEach((food) => {
               const foodItem = document.createElement("li");
               foodItem.innerHTML = `
-                            <strong>${food.food_name}</strong> - 
-                            Calories: ${food.cal}, 
-                            Protein: ${food.protein}g, 
-                            Fat: ${food.fat}g, 
-                            Carbs: ${food.carbohydrates}g
-                        `;
+                <div class="food-item">
+                  <div class="food-info">
+                    <strong>${food.food_name}</strong> -
+                    Calories: ${food.cal},
+                    Protein: ${food.protein}g,
+                    Fat: ${food.fat}g,
+                    Carbs: ${food.carbohydrates}g
+                  </div>
+                  <div class="food-actions">
+                    <button class="edit-btn" data-id="${food.id}">Edit</button>
+                    <button class="delete-btn" data-id="${food.id}">Delete</button>
+                  </div>
+                </div>
+              `;
+
+              // Add delete handler
+              foodItem
+                .querySelector(".delete-btn")
+                .addEventListener("click", async () => {
+                  if (
+                    confirm("Are you sure you want to delete this food item?")
+                  ) {
+                    try {
+                      await fetch(`https://api.tczhong.com/food/${food.id}`, {
+                        method: "DELETE",
+                      });
+                      fetchDailyDetails(); // Refresh the list
+                    } catch (error) {
+                      console.error("Error deleting food:", error);
+                    }
+                  }
+                });
+
+              // Add edit handler
+              foodItem
+                .querySelector(".edit-btn")
+                .addEventListener("click", () => {
+                  const newName = prompt(
+                    "Enter new food name:",
+                    food.food_name
+                  );
+                  const newCal = prompt("Enter new calories:", food.cal);
+                  if (newName && newCal) {
+                    fetch(`https://api.tczhong.com/food/${food.id}`, {
+                      method: "PUT",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        food_name: newName,
+                        cal: Number(newCal),
+                      }),
+                    })
+                      .then(() => fetchDailyDetails()) // Refresh the list
+                      .catch((error) =>
+                        console.error("Error updating food:", error)
+                      );
+                  }
+                });
               foodList.appendChild(foodItem);
             });
 
