@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nutrition Tracker</title>
+    <link rel="stylesheet" href="../style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.1/dist/chartjs-plugin-annotation.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Nutrition Tracker</h1>
+    </header>
+    <main>
+      <section>
+        <h2>Select Date Range</h2>
+        <div class="date-range">
+          <label for="start-date">Start Date:</label>
+          <input type="date" id="start-date" value="2025-06-01" />
+          <label for="end-date">End Date:</label>
+          <input type="date" id="end-date" value="2025-06-11" />
+          <button id="fetch-data">Get Nutrition Data</button>
+        </div>
+      </section>
+      <section>
+        <h2>Daily Nutrition Summary</h2>
+        <div class="charts-grid">
+          <div class="chart-container">
+            <canvas id="caloriesChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <canvas id="proteinChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <canvas id="fatChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <canvas id="carbsChart"></canvas>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2>Daily Food Details</h2>
+        <div class="date-selector">
+          <label for="daily-date">Select Date:</label>
+          <input type="date" id="daily-date" value="2025-06-11" />
+          <button id="fetch-daily">Get Daily Details</button>
+        </div>
+        <div id="daily-details" class="food-list"></div>
+      </section>
+    </main>
+    <footer>
+      <p>&copy; 2025 Nutrition Tracker</p>
+    </footer>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize 4 separate charts
+        const caloriesCtx = document
+          .getElementById("caloriesChart")
+          .getContext("2d");
+        const proteinCtx = document
+          .getElementById("proteinChart")
+          .getContext("2d");
+        const fatCtx = document.getElementById("fatChart").getContext("2d");
+        const carbsCtx = document.getElementById("carbsChart").getContext("2d");
+
+        let caloriesChart = new Chart(caloriesCtx, {
+          type: "line",
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: "Calories" },
+              annotation: {
+                annotations: {
+                  line1: {
+                    type: "line",
+                    yMin: 1800,
+                    yMax: 1800,
+                    borderColor: "rgb(255, 99, 132)",
+                    borderWidth: 2,
+                    borderDash: [6, 6],
+                    label: {
+                      content: "Goal: 1800 cal",
+                      enabled: true,
+                      position: "right",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        let proteinChart = new Chart(proteinCtx, {
+          type: "line",
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: "Protein (g)" },
+              annotation: {
+                annotations: {
+                  line1: {
+                    type: "line",
+                    yMin: 170,
+                    yMax: 170,
+                    borderColor: "rgb(54, 162, 235)",
+                    borderWidth: 2,
+                    borderDash: [6, 6],
+                    label: {
+                      content: "Goal: 170g",
+                      enabled: true,
+                      position: "right",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        let fatChart = new Chart(fatCtx, {
+          type: "line",
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: "Fat (g)" },
+              annotation: {
+                annotations: {
+                  line1: {
+                    type: "line",
+                    yMin: 56,
+                    yMax: 56,
+                    borderColor: "rgb(255, 206, 86)",
+                    borderWidth: 2,
+                    borderDash: [6, 6],
+                    label: {
+                      content: "Goal: 56g",
+                      enabled: true,
+                      position: "right",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        let carbsChart = new Chart(carbsCtx, {
+          type: "line",
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: "Carbs (g)" },
+              annotation: {
+                annotations: {
+                  line1: {
+                    type: "line",
+                    yMin: 180,
+                    yMax: 180,
+                    borderColor: "rgb(75, 192, 192)",
+                    borderWidth: 2,
+                    borderDash: [6, 6],
+                    label: {
+                      content: "Goal: 180g",
+                      enabled: true,
+                      position: "right",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        document
+          .getElementById("fetch-data")
+          .addEventListener("click", fetchNutritionData);
+        document
+          .getElementById("fetch-daily")
+          .addEventListener("click", fetchDailyDetails);
+
+        async function fetchNutritionData() {
+          const startDate = document.getElementById("start-date").value;
+          const endDate = document.getElementById("end-date").value;
+
+          try {
+            const response = await fetch(
+              `https://api.tczhong.com/food/nutrition-summary?start_date=${startDate}&end_date=${endDate}`
+            );
+            const data = await response.json();
+
+            if (data.status === "success") {
+              updateChart(data.data.daily_nutrition);
+            }
+          } catch (error) {
+            console.error("Error fetching nutrition data:", error);
+          }
+        }
+
+        function updateChart(dailyNutrition) {
+          const dates = dailyNutrition.map((item) => item.date);
+
+          // Update calories chart
+          caloriesChart.data.labels = dates;
+          caloriesChart.data.datasets = [
+            {
+              label: "Calories",
+              data: dailyNutrition.map((item) => item.calories),
+              borderColor: "rgb(255, 99, 132)",
+              backgroundColor: "rgba(255, 99, 132, 0.1)",
+              borderWidth: 2,
+              tension: 0.1,
+              pointBackgroundColor: "rgb(255, 99, 132)",
+              pointRadius: 5,
+              pointHoverRadius: 7,
+            },
+          ];
+          caloriesChart.options.plugins.tooltip = {
+            callbacks: {
+              label: (context) => `Calories: ${context.parsed.y} cal`,
+            },
+          };
+          caloriesChart.update({ duration: 800, easing: "easeOutQuart" });
+
+          // Update protein chart
+          proteinChart.data.labels = dates;
+          proteinChart.data.datasets = [
+            {
+              label: "Protein",
+              data: dailyNutrition.map((item) => item.protein),
+              borderColor: "rgb(54, 162, 235)",
+              backgroundColor: "rgba(54, 162, 235, 0.1)",
+              borderWidth: 2,
+              tension: 0.1,
+              pointBackgroundColor: "rgb(54, 162, 235)",
+              pointRadius: 5,
+              pointHoverRadius: 7,
+            },
+          ];
+          proteinChart.options.plugins.tooltip = {
+            callbacks: {
+              label: (context) => `Protein: ${context.parsed.y} g`,
+            },
+          };
+          proteinChart.update({ duration: 800, easing: "easeOutQuart" });
+
+          // Update fat chart
+          fatChart.data.labels = dates;
+          fatChart.data.datasets = [
+            {
+              label: "Fat",
+              data: dailyNutrition.map((item) => item.fat),
+              borderColor: "rgb(255, 206, 86)",
+              backgroundColor: "rgba(255, 206, 86, 0.1)",
+              borderWidth: 2,
+              tension: 0.1,
+              pointBackgroundColor: "rgb(255, 206, 86)",
+              pointRadius: 5,
+              pointHoverRadius: 7,
+            },
+          ];
+          fatChart.options.plugins.tooltip = {
+            callbacks: {
+              label: (context) => `Fat: ${context.parsed.y} g`,
+            },
+          };
+          fatChart.update({ duration: 800, easing: "easeOutQuart" });
+
+          // Update carbs chart
+          carbsChart.data.labels = dates;
+          carbsChart.data.datasets = [
+            {
+              label: "Carbs",
+              data: dailyNutrition.map((item) => item.carbohydrates),
+              borderColor: "rgb(75, 192, 192)",
+              backgroundColor: "rgba(75, 192, 192, 0.1)",
+              borderWidth: 2,
+              tension: 0.1,
+              pointBackgroundColor: "rgb(75, 192, 192)",
+              pointRadius: 5,
+              pointHoverRadius: 7,
+            },
+          ];
+          carbsChart.options.plugins.tooltip = {
+            callbacks: {
+              label: (context) => `Carbs: ${context.parsed.y} g`,
+            },
+          };
+          carbsChart.update({ duration: 800, easing: "easeOutQuart" });
+        }
+
+        async function fetchDailyDetails() {
+          const date = document.getElementById("daily-date").value;
+
+          try {
+            const response = await fetch(
+              `https://api.tczhong.com/food/daily/${date}`
+            );
+            const data = await response.json();
+
+            if (data.status === "success") {
+              displayDailyDetails(data.data);
+            }
+          } catch (error) {
+            console.error("Error fetching daily details:", error);
+          }
+        }
+
+        function displayDailyDetails(foods) {
+          const container = document.getElementById("daily-details");
+          container.innerHTML = "";
+
+          const groupedByMeal = foods.reduce((acc, food) => {
+            if (!acc[food.meal_type]) acc[food.meal_type] = [];
+            acc[food.meal_type].push(food);
+            return acc;
+          }, {});
+
+          for (const [mealType, mealFoods] of Object.entries(groupedByMeal)) {
+            const mealSection = document.createElement("div");
+            mealSection.className = "meal-section";
+
+            const mealHeader = document.createElement("h3");
+            mealHeader.textContent =
+              mealType.charAt(0).toUpperCase() + mealType.slice(1);
+            mealSection.appendChild(mealHeader);
+
+            const foodList = document.createElement("ul");
+            mealFoods.forEach((food) => {
+              const foodItem = document.createElement("li");
+              foodItem.innerHTML = `
+                            <strong>${food.food_name}</strong> - 
+                            Calories: ${food.cal}, 
+                            Protein: ${food.protein}g, 
+                            Fat: ${food.fat}g, 
+                            Carbs: ${food.carbohydrates}g
+                        `;
+              foodList.appendChild(foodItem);
+            });
+
+            mealSection.appendChild(foodList);
+            container.appendChild(mealSection);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
