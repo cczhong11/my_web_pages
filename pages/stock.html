@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Stock Prices & Transactions (FMP) 📊</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <script src="../config.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        padding: 20px;
+        background: #f9f9f9;
+        color: #333;
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      #controls {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      #chart-container {
+        width: 90%;
+        max-width: 900px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      input[type="file"] {
+        margin: 0 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>📈 Stock Prices & Your Transactions (FMP) 📅</h2>
+    <div id="controls">
+      <label for="uploadJson">Upload JSON Data:</label>
+      <input type="file" id="uploadJson" accept=".json" />
+      <label for="symbolSelect" style="margin-left: 10px"
+        >Choose a stock:</label
+      >
+      <select id="symbolSelect" style="display: none"></select>
+    </div>
+    <div id="chart-container">
+      <canvas id="priceChart"></canvas>
+    </div>
+
+    <script>
+      let priceChart = null;
+      let configData = {
+        startDate: "2024-12-24",
+        endDate: "2025-06-24",
+        symbols: [],
+        transactions: [],
+      };
+      const FMP_KEY = window.FMP_KEY || "YOUR_FALLBACK_API_KEY";
+
+      const parseDate = (dateStr) => {
+        const [month, day, year] = dateStr.split("/");
+        return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+      };
+
+      document
+        .getElementById("uploadJson")
+        .addEventListener("change", async (ev) => {
+          const file = ev.target.files[0];
+          if (!file) return;
+          const text = await file.text();
+          try {
+            const json = JSON.parse(text);
+            configData.startDate = parseDate(json.FromDate);
+            configData.endDate = parseDate(json.ToDate);
+            configData.transactions = json.BrokerageTransactions.map((tx) => ({
+              date: parseDate(tx.Date),
+              symbol: tx.Symbol,
+              amount: tx.Amount,
+              Action: tx.Action,
+            }));
+            configData.symbols = [
+              ...new Set(configData.transactions.map((t) => t.symbol)),
+            ];
+
+            const symbolSelect = document.getElementById("symbolSelect");
+            symbolSelect.innerHTML = '<option value="ALL">All Symbols</option>'; // Clear previous options
+            configData.symbols.forEach((symbol) => {
+              const option = document.createElement("option");
+              option.value = symbol;
+              option.textContent = symbol;
+              symbolSelect.appendChild(option);
+            });
+            symbolSelect.style.display = "inline-block";
+
+            if (!symbolSelect.onchange) {
+              symbolSelect.onchange = () => drawChartWithFMP();
+            }
+
+            await drawChartWithFMP();
+          } catch (e) {
+            alert("JSON 解析失败，请检查格式～");
+            console.error(e);
+          }
+        });
+
+      // 用 Financial Modeling Prep 获取日线数据
+      async function fetchTimeSeriesFMP(symbol, startDate, endDate) {
+        const url =
+          `https://financialmodelingprep.com/api/v3/historical-price-full/${symbol}` +
+          `?from=${startDate}&to=${endDate}&apikey=${FMP_KEY}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        const hist = json.historical || [];
+        // 返回 {date, price} 数组并按日期升序
+        return hist
+          .map((e) => ({ date: e.date, price: e.close }))
+          .sort((a, b) => a.date.localeCompare(b.date));
+      }
+
+      async function drawChartWithFMP() {
+        const { startDate, endDate, transactions } = configData;
+        const symbolSelect = document.getElementById("symbolSelect");
+        const selectedSymbol = symbolSelect.value;
+
+        const symbolsToDraw =
+          selectedSymbol === "ALL" || !selectedSymbol
+            ? configData.symbols
+            : [selectedSymbol];
+
+        const filteredTransactions =
+          selectedSymbol === "ALL"
+            ? transactions
+            : transactions.filter((tx) => tx.symbol === selectedSymbol);
+
+        // 拉取所有
+        const allData = await Promise.all(
+          symbolsToDraw.map((sym) =>
+            fetchTimeSeriesFMP(sym, startDate, endDate)
+          )
+        );
+
+        const priceMaps = new Map();
+        allData.forEach((arr, idx) => {
+          const symbol = symbolsToDraw[idx];
+          const priceMap = new Map(arr.map((e) => [e.date, e.price]));
+          priceMaps.set(symbol, priceMap);
+        });
+
+        // 收集所有日期
+        const dateSet = new Set();
+        allData.forEach((arr) => arr.forEach((e) => dateSet.add(e.date)));
+        const labels = Array.from(dateSet).sort();
+        // 构造 datasets
+        const datasets = allData.map((arr, idx) => {
+          const map = new Map(arr.map((e) => [e.date, e.price]));
+          return {
+            label: symbolsToDraw[idx],
+            data: labels.map((d) => map.get(d) ?? null),
+            tension: 0.2,
+            spanGaps: true,
+          };
+        });
+        // 交易注释
+        const annotations = filteredTransactions
+          .map((tx) => {
+            const priceMap = priceMaps.get(tx.symbol);
+            if (!priceMap) return null;
+            const price = priceMap.get(tx.date);
+            if (price === undefined) return null;
+
+            return {
+              type: "point",
+              xValue: tx.date,
+              yValue: price,
+              backgroundColor:
+                tx.Action === "Buy"
+                  ? "rgba(75, 192, 192, 0.7)"
+                  : "rgba(255, 99, 132, 0.7)",
+              radius: 6,
+              borderColor:
+                tx.Action === "Buy"
+                  ? "rgba(75, 192, 192, 1)"
+                  : "rgba(255, 99, 132, 1)",
+              borderWidth: 2,
+              label: {
+                enabled: true,
+                content: `${tx.Action}: ${tx.amount.replace(/-|\$/g, "")}`,
+                position: "top",
+                backgroundColor: "rgba(0,0,0,0.6)",
+                color: "white",
+                borderRadius: 4,
+                padding: 4,
+                yAdjust: -10,
+              },
+            };
+          })
+          .filter(Boolean);
+
+        // 如果已存在图表，销毁它
+        if (priceChart) priceChart.destroy();
+        // 新建图表
+        priceChart = new Chart(document.getElementById("priceChart"), {
+          type: "line",
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            scales: {
+              x: {
+                type: "time",
+                time: {
+                  parser: "yyyy-MM-dd",
+                  unit: "month",
+                  tooltipFormat: "yyyy-MM-dd",
+                },
+                title: { display: true, text: "Date" },
+                min: configData.startDate,
+                max: configData.endDate,
+              },
+              y: { title: { display: true, text: "Price (USD)" } },
+            },
+            plugins: {
+              legend: { position: "top" },
+              annotation: {
+                annotations,
+              },
+            },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

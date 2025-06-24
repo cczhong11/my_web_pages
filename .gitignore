@@ -17,3 +17,5 @@ build/
 *.njsproj
 *.sln
 *.sw?
+# Config files
+config.js
