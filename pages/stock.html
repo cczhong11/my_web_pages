@@ -6,7 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
-    <script src="/docs/config.js"></script>
+
     <style>
       body {
         font-family: "Segoe UI", sans-serif;
@@ -39,7 +39,19 @@
   <body>
     <h2>📈 Stock Prices & Your Transactions (FMP) 📅</h2>
     <div id="controls">
-      <label for="uploadJson">Upload JSON Data:</label>
+      <label for="fmpKey">FMP Key:</label>
+      <input type="text" id="fmpKey" placeholder="Enter FMP Key" />
+      <small style="margin-left: 5px"
+        >(Get key from
+        <a
+          href="https://site.financialmodelingprep.com/developer/docs/dashboard"
+          target="_blank"
+          >FMP Dashboard</a
+        >)</small
+      >
+      <label for="uploadJson" style="margin-left: 10px"
+        >Upload JSON Data:</label
+      >
       <input type="file" id="uploadJson" accept=".json" />
       <label for="symbolSelect" style="margin-left: 10px"
         >Choose a stock:</label
@@ -58,7 +70,6 @@
         symbols: [],
         transactions: [],
       };
-      const FMP_KEY = window.FMP_KEY || "YOUR_FALLBACK_API_KEY";
 
       const parseDate = (dateStr) => {
         const [month, day, year] = dateStr.split("/");
@@ -107,10 +118,10 @@
         });
 
       // 用 Financial Modeling Prep 获取日线数据
-      async function fetchTimeSeriesFMP(symbol, startDate, endDate) {
+      async function fetchTimeSeriesFMP(symbol, startDate, endDate, apiKey) {
         const url =
           `https://financialmodelingprep.com/api/v3/historical-price-full/${symbol}` +
-          `?from=${startDate}&to=${endDate}&apikey=${FMP_KEY}`;
+          `?from=${startDate}&to=${endDate}&apikey=${apiKey}`;
         const res = await fetch(url);
         const json = await res.json();
         const hist = json.historical || [];
@@ -121,6 +132,11 @@
       }
 
       async function drawChartWithFMP() {
+        const apiKey = document.getElementById("fmpKey").value;
+        if (!apiKey) {
+          alert("Please enter the FMP API Key.");
+          return;
+        }
         const { startDate, endDate, transactions } = configData;
         const symbolSelect = document.getElementById("symbolSelect");
         const selectedSymbol = symbolSelect.value;
@@ -138,7 +154,7 @@
         // 拉取所有
         const allData = await Promise.all(
           symbolsToDraw.map((sym) =>
-            fetchTimeSeriesFMP(sym, startDate, endDate)
+            fetchTimeSeriesFMP(sym, startDate, endDate, apiKey)
           )
         );
 
