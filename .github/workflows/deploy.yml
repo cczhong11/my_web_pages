@@ -21,13 +21,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Create config.js
-        run: echo "window.FMP_KEY = '${{ secrets.FMP_KEY }}';" > config.js
+        run: echo "window.FMP_KEY = '${{ secrets.FMP_KEY }}';" > docs/config.js
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          path: "docs"
 
   deploy:
     environment:
