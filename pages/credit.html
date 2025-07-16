@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>信用卡积分攻略 | 视觉增强版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      :root {
+        --primary-color: #0d2c54;
+        --secondary-color: #1a5a96;
+        --accent-color: #fca311;
+        --light-gray: #f8f9fa;
+        --text-color: #343a40;
+        --border-color: #e9ecef;
+      }
+
+      body {
+        font-family: "Lato", sans-serif;
+        line-height: 1.7;
+        color: var(--text-color);
+        background-color: var(--light-gray);
+        margin: 0;
+        padding: 20px 0;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: #ffffff;
+        padding: 40px 40px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-family: "Montserrat", sans-serif;
+        font-size: 2.5em;
+        margin: 0;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+        margin-top: 10px;
+      }
+
+      .content {
+        padding: 30px 40px;
+      }
+
+      h2,
+      h3 {
+        font-family: "Montserrat", sans-serif;
+        color: var(--primary-color);
+        border-bottom: 3px solid var(--accent-color);
+        padding-bottom: 10px;
+        margin-top: 40px;
+        margin-bottom: 20px;
+      }
+
+      h3 {
+        font-size: 1.5em;
+        display: flex;
+        align-items: center;
+      }
+
+      h3 .fa-solid {
+        color: var(--secondary-color);
+        margin-right: 12px;
+        font-size: 1.2em;
+      }
+
+      .category-card {
+        background-color: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+      }
+
+      .category-card:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        transform: translateY(-5px);
+      }
+
+      .category-card strong {
+        color: var(--secondary-color);
+      }
+
+      ul {
+        padding-left: 25px;
+        list-style: none;
+      }
+
+      li {
+        margin-bottom: 15px;
+        position: relative;
+      }
+
+      ul li::before {
+        content: "✓";
+        position: absolute;
+        left: -25px;
+        color: var(--accent-color);
+        font-weight: bold;
+      }
+
+      ul ul {
+        margin-top: 10px;
+        padding-left: 20px;
+      }
+
+      ul ul li::before {
+        content: "›";
+        font-weight: bold;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 30px 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        padding: 16px 20px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      thead th {
+        background-color: var(--primary-color);
+        color: #ffffff;
+        font-family: "Montserrat", sans-serif;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9em;
+        letter-spacing: 0.5px;
+      }
+
+      tbody tr:nth-child(even) {
+        background-color: #fdfdfd;
+      }
+
+      tbody tr:hover {
+        background-color: #f1f6fb;
+      }
+
+      td strong {
+        color: var(--primary-color);
+      }
+
+      .note {
+        background-color: #eef5fc;
+        border-left: 6px solid var(--secondary-color);
+        padding: 20px;
+        margin: 40px 0;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .note h3 {
+        border-bottom: none;
+        margin-top: 0;
+        color: var(--primary-color);
+        font-size: 1.3em;
+      }
+
+      .note ul li::before {
+        content: "⚠️";
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1>信用卡积分最大化攻略</h1>
+        <p>Amex, Chase, Discover, Bilt & Co-branded Cards</p>
+      </header>
+
+      <div class="content">
+        <h2><i class="fa-solid fa-bullseye"></i> 核心策略：组合拳出击</h2>
+        <p>
+          您的信用卡组合涵盖了三大主流积分系统：Chase Ultimate Rewards
+          (UR)，American Express Membership Rewards
+          (MR)，以及多个酒店和航空公司忠诚度计划。基本策略是：
+        </p>
+        <ul>
+          <li>
+            <strong>最大化返点类别:</strong>
+            优先使用在高返点类别中提供奖励的信用卡。
+          </li>
+          <li>
+            <strong>灵活运用积分:</strong>
+            善用Chase和Amex的积分，将其转移至合作的航空公司和酒店伙伴，以获取更高价值。
+          </li>
+          <li>
+            <strong>覆盖所有消费:</strong>
+            对于无特殊奖励的消费，使用提供较高基础返点的信用卡。
+          </li>
+        </ul>
+
+        <h2><i class="fa-solid fa-list-check"></i> 各消费类别刷卡指南</h2>
+
+        <div class="category-card">
+          <h3><i class="fa-solid fa-utensils"></i>餐饮美食 (Dining)</h3>
+          <ul>
+            <li>
+              <strong>首选:</strong> <strong>Bilt Mastercard</strong>
+              <ul>
+                <li>
+                  <strong>原因:</strong> 3x
+                  Bilt积分，价值高且灵活。无年费（需每月刷卡5次）。
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>次选:</strong>
+              <strong>Chase Sapphire Preferred (CSP)</strong>
+              <ul>
+                <li>
+                  <strong>原因:</strong> 3x UR积分，是积累UR点数的绝佳选择。
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3><i class="fa-solid fa-plane-departure"></i>旅行 (Travel)</h3>
+          <ul>
+            <li>
+              <strong>通过Chase旅游门户预订:</strong>
+              <ul>
+                <li>
+                  <strong>首选: Chase Sapphire Preferred (CSP)</strong> - 提供5x
+                  UR积分，积分价值提升25%。
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>直接向航司/酒店预订:</strong>
+              <ul>
+                <li>
+                  <strong>首选: Chase Sapphire Preferred (CSP)</strong> - 2x
+                  UR积分，覆盖范围广。
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>希尔顿酒店:</strong>
+              <ul>
+                <li>
+                  <strong>Amex Hilton Honors Card</strong> - 7x Hilton积分。
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>万豪酒店:</strong>
+              <ul>
+                <li>
+                  <strong>Chase Marriott Bonvoy Card</strong> - 高达6x
+                  Marriott积分。
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>阿拉斯加航空:</strong>
+              <ul>
+                <li>
+                  <strong>Alaska Airlines Visa Card</strong> - 3x Alaska里程。
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3>
+            <i class="fa-solid fa-cart-shopping"></i>超市 (U.S. Supermarkets)
+          </h3>
+          <ul>
+            <li>
+              <strong>首选:</strong>
+              <strong>American Express Everyday Card</strong>
+              <ul>
+                <li>
+                  <strong>原因:</strong> 2x
+                  MR积分（年上限$6k），消费20次/月可达2.4x。
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>季度性选择:</strong>
+              <strong>Discover it & Chase Freedom</strong>
+              <ul>
+                <li>
+                  <strong>原因:</strong>
+                  当季度为超市时可达5%或5x返点（上限$1,500）。
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3><i class="fa-solid fa-house-chimney"></i>房租 (Rent)</h3>
+          <ul>
+            <li>
+              <strong>唯一选择:</strong> <strong>Bilt Mastercard</strong>
+              <ul>
+                <li>
+                  <strong>原因:</strong>
+                  市面上唯一免手续费支付房租并赚取1x积分的卡。
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3>
+            <i class="fa-solid fa-gas-pump"></i>加油 (Gas Stations) & 药店
+            (Drugstores)
+          </h3>
+          <ul>
+            <li>
+              <strong>加油首选:</strong>
+              <strong>American Express Hilton Honors Card</strong> (5x
+              Hilton积分)。
+            </li>
+            <li>
+              <strong>药店首选:</strong> <strong>Chase Freedom</strong> (3x
+              UR积分)。
+            </li>
+            <li>
+              <strong>季度性选择:</strong>
+              <strong>Discover it / Chase Freedom</strong> (5%或5x返点)。
+            </li>
+          </ul>
+        </div>
+
+        <div class="category-card">
+          <h3>
+            <i class="fa-brands fa-amazon"></i>Amazon &
+            <i class="fa-solid fa-film"></i>电影
+          </h3>
+          <ul>
+            <li>
+              <strong>Amazon首选:</strong>
+              <strong>Discover it / Chase Freedom</strong>
+              (仅限当季度为5%奖励类别时)。无季度奖励则根据当前积分目标选择。
+            </li>
+            <li>
+              <strong>电影院首选:</strong>
+              <strong>Chase Sapphire Preferred (CSP)</strong> (3x
+              UR积分，归为娱乐/餐饮)。
+            </li>
+          </ul>
+        </div>
+
+        <h2><i class="fa-solid fa-table-list"></i>卡片组合使用总结</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>消费类别</th>
+              <th>首选信用卡</th>
+              <th>返点/返现</th>
+              <th>备注</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>餐饮 / 电影院</strong></td>
+              <td>Bilt Mastercard / CSP</td>
+              <td>3x Bilt / 3x UR</td>
+              <td>两者均为顶级选择</td>
+            </tr>
+            <tr>
+              <td><strong>旅行 (Chase Portal)</strong></td>
+              <td>Chase Sapphire Preferred</td>
+              <td>5x UR 积分</td>
+              <td>积分价值提升25%</td>
+            </tr>
+            <tr>
+              <td><strong>旅行 (直接预订)</strong></td>
+              <td>Chase Sapphire Preferred</td>
+              <td>2x UR 积分</td>
+              <td>覆盖广泛</td>
+            </tr>
+            <tr>
+              <td><strong>希尔顿酒店</strong></td>
+              <td>Amex Hilton Honors</td>
+              <td>7x Hilton 积分</td>
+              <td>酒店内最高回报</td>
+            </tr>
+            <tr>
+              <td><strong>万豪酒店</strong></td>
+              <td>Chase Marriott Bonvoy</td>
+              <td>6x Marriott 积分</td>
+              <td>酒店内最高回报</td>
+            </tr>
+            <tr>
+              <td><strong>美国超市</strong></td>
+              <td>Amex Everyday</td>
+              <td>2x-2.4x MR 积分</td>
+              <td>年上限$6,000</td>
+            </tr>
+            <tr>
+              <td><strong>房租</strong></td>
+              <td>Bilt Mastercard</td>
+              <td>1x Bilt 积分</td>
+              <td>免手续费</td>
+            </tr>
+            <tr>
+              <td><strong>加油</strong></td>
+              <td>Amex Hilton Honors</td>
+              <td>5x Hilton 积分</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><strong>Amazon</strong></td>
+              <td>Discover it / Chase Freedom</td>
+              <td>5% / 5x</td>
+              <td><strong>仅限当季度奖励类别</strong></td>
+            </tr>
+            <tr>
+              <td><strong>季度轮换类别</strong></td>
+              <td>Discover it / Chase Freedom</td>
+              <td>5% / 5x</td>
+              <td>需激活，上限$1,500</td>
+            </tr>
+            <tr>
+              <td><strong>所有其他消费</strong></td>
+              <td>CSP / Amex Everyday</td>
+              <td>1x-1.2x 积分</td>
+              <td>根据积分目标选择</td>
+            </tr>
+          </tbody>
+        </table>
+        <h2><i class="fa-solid fa-shuffle"></i> 积分系统转点伙伴对比</h2>
+        <p>
+          了解您的UR,
+          Bilt和MR积分可以去哪里至关重要。下面的表格清晰地展示了三大系统的转点伙伴和比例，帮助您制定最佳兑换策略。
+        </p>
+
+        <div class="takeaways">
+          <h4>战略价值分析</h4>
+          <ul>
+            <li>
+              <strong>Chase Ultimate Rewards (UR):</strong>
+              核心价值在于其独家酒店伙伴
+              <strong>World of Hyatt (凯悦)</strong
+              >，通常能用较少积分换到高价值酒店。同时覆盖美联航 (United)
+              和西南航空 (Southwest) 两大美国国内航司。
+            </li>
+            <li>
+              <strong>Bilt Rewards:</strong> 最大亮点是独家航司伙伴
+              <strong>American Airlines (美国航空)</strong> 和
+              <strong>Alaska Airlines (阿拉斯加航空)</strong
+              >，填补了其他积分系统的空白。其伙伴列表非常全面，几乎涵盖了所有重要航司。
+            </li>
+            <li>
+              <strong>American Express Membership Rewards (MR):</strong>
+              拥有最广泛的航司合作伙伴网络，尤其在国际航线上选择众多，如全日空
+              (ANA) 和达美 (Delta)。在酒店方面，其希尔顿 (Hilton) 的 1:2
+              转点比例在有活动时也很有吸引力。
+            </li>
+          </ul>
+        </div>
+
+        <h3>
+          <i class="fa-solid fa-plane-up"></i> 航空公司伙伴 (Airline Partners)
+        </h3>
+        <table>
+          <thead>
+            <tr>
+              <th>航空公司 (联盟)</th>
+              <th><i class="fa-brands fa-cc-chase"></i> Chase UR</th>
+              <th><i class="fa-solid fa-building-columns"></i> Bilt</th>
+              <th><i class="fa-brands fa-cc-amex"></i> Amex MR</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="partner-name">Aer Lingus (Avios)</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Aeromexico (SkyTeam)</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1.6</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Air Canada (Star Alliance)</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Air France/KLM (SkyTeam)</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Alaska Airlines (Oneworld)</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">American Airlines (Oneworld)</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">ANA (Star Alliance)</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Avianca LifeMiles (Star Alliance)</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">British Airways (Avios)</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Cathay Pacific (Oneworld)</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Delta Air Lines (SkyTeam)</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Emirates Skywards</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1*</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Hawaiian Airlines</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Iberia (Avios)</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">JetBlue TrueBlue</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:0.8</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Qatar Airways (Avios)</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Singapore Airlines (Star Alliance)</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Southwest Rapid Rewards</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Turkish Airlines (Star Alliance)</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">United MileagePlus (Star Alliance)</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Virgin Atlantic</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size: 0.9em; color: #6c757d">
+          *Amex转点至阿联酋航空(Emirates)的比例将自2025年9月16日起调整为5:4。
+        </p>
+
+        <h3><i class="fa-solid fa-bed"></i> 酒店伙伴 (Hotel Partners)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>酒店集团</th>
+              <th><i class="fa-brands fa-cc-chase"></i> Chase UR</th>
+              <th><i class="fa-solid fa-building-columns"></i> Bilt</th>
+              <th><i class="fa-brands fa-cc-amex"></i> Amex MR</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="partner-name">Choice Privileges</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Hilton Honors</td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:2</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">IHG One Rewards</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">Marriott Bonvoy</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+            </tr>
+            <tr>
+              <td class="partner-name">World of Hyatt</td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="supported">1:1</span></td>
+              <td class="ratio"><span class="unsupported">—</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note">
+          <h3>重要提示</h3>
+          <ul>
+            <li>
+              <strong>Chase 5/24规则:</strong>
+              密切注意您在过去24个月内的新开卡数量，以免被Chase拒绝。
+            </li>
+            <li>
+              <strong>积分价值:</strong> UR, MR,
+              Bilt等灵活积分通常比固定的酒店或航空里程更有价值。
+            </li>
+            <li>
+              <strong>年费评估:</strong>
+              定期评估年费卡的收益是否超过成本。CSP的$95年费通常能通过福利（如$50酒店报销）和高返点轻松抵消。
+            </li>
+          </ul>
+        </div>
+
+        <p
+          style="
+            text-align: center;
+            margin-top: 40px;
+            font-style: italic;
+            color: #777;
+          "
+        >
+          通过遵循这份策略指南，您可以确保在每一次消费中都获得最大的积分回报，从而更快地实现您的旅行和兑换目标。
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

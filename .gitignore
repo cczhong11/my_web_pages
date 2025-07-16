@@ -19,3 +19,5 @@ build/
 *.sw?
 # Config files
 config.js
+.aider*
+.aider/*
