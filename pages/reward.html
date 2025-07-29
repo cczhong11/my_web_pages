@@ -463,10 +463,47 @@
           }
         };
 
+        const renderLogs = async () => {
+          const response = await api.getLogs({ user_id: CURRENT_USER_ID });
+          logsContainer.innerHTML = "";
+          if (response.status === "success" && response.data) {
+            // Sort logs by timestamp descending
+            response.data.sort(
+              (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+            );
+
+            response.data.forEach((log) => {
+              const item = rewardItems.find((i) => i.item_id === log.item_id);
+              if (item) {
+                const typeInfo = REWARD_TYPES[item.type];
+                const logEntry = `
+                <div class="p-2 rounded-md flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+                    <div>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">${
+                          item.name
+                        }</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">${new Date(
+                          log.timestamp
+                        ).toLocaleString()}</span>
+                    </div>
+                    <div class="font-semibold text-green-600 dark:text-green-400">+${
+                      item.score
+                    }</div>
+                </div>
+                `;
+                logsContainer.insertAdjacentHTML("beforeend", logEntry);
+              }
+            });
+          }
+        };
+
         const renderItems = async () => {
           const response = await api.getAllItems();
           itemsTableBody.innerHTML = "";
           if (response.status === "success") {
+            // Update local rewardItems state
+            rewardItems = response.data;
+
             response.data.forEach((item) => {
               const typeInfo = REWARD_TYPES[item.type];
               const row = `
@@ -480,9 +517,9 @@
                             <td class="py-3 px-4 font-medium text-gray-900 dark:text-white">${
                               item.name
                             }</td>
-                            <td class="py-3 px-4 text-green-600 dark:text-green-400 font-semibold">+${
-                              item.score
-                            }</td>
+                            <td class="py-3 px-4 text-green-600 dark:text-green-400 font-semibold">
+                              ${item.score > 0 ? "+" : ""}${item.score}
+                            </td>
                             <td class="py-3 px-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${
                               typeInfo.color
                             }">${typeInfo.label}</span></td>
@@ -504,34 +541,6 @@
                     `;
               itemsTableBody.insertAdjacentHTML("beforeend", row);
             });
-          }
-        };
-
-        const renderLogs = async () => {
-          const response = await api.getLogs();
-          logsContainer.innerHTML = "";
-          if (response.status === "success" && response.data.length > 0) {
-            response.data.forEach((log) => {
-              const item = rewardItems.find((i) => i.item_id === log.item_id);
-              if (item) {
-                const logEntry = `
-                            <div class="flex justify-between items-center text-sm p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
-                                <span>为 <strong class="text-blue-500 dark:text-blue-400">${
-                                  item.name
-                                }</strong> 打卡，获得 <strong class="text-green-500 dark:text-green-400">+${
-                  item.score
-                }</strong> 分</span>
-                                <span class="text-gray-500 dark:text-gray-400">${new Date(
-                                  log.timestamp
-                                ).toLocaleString()}</span>
-                            </div>
-                        `;
-                logsContainer.insertAdjacentHTML("beforeend", logEntry);
-              }
-            });
-          } else {
-            logsContainer.innerHTML =
-              '<p class="text-gray-500 dark:text-gray-400 text-center py-4">暂无日志记录。</p>';
           }
         };
 
@@ -666,8 +675,8 @@
 
         // --- INITIALIZATION ---
         const renderAll = async () => {
+          await renderItems(); // Must run before renderLogs to populate rewardItems
           await renderScores();
-          await renderItems();
           await renderLogs();
         };
 
