@@ -524,7 +524,12 @@
             // Update local rewardItems state
             rewardItems = response.data;
 
-            response.data.forEach((item) => {
+            // Sort items by type
+            const sortedItems = [...rewardItems].sort((a, b) => {
+              return a.type.localeCompare(b.type);
+            });
+
+            sortedItems.forEach((item) => {
               const typeInfo = REWARD_TYPES[item.type];
               const row = `
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50" data-item-id="${
