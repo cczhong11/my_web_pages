@@ -404,6 +404,10 @@
                     try {
                       await fetch(`https://api.tczhong.com/food/${food.id}`, {
                         method: "DELETE",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        credentials: "include",
                       });
                       fetchDailyDetails(); // Refresh the list
                     } catch (error) {
@@ -427,6 +431,7 @@
                       headers: {
                         "Content-Type": "application/json",
                       },
+                      credentials: "include",
                       body: JSON.stringify({
                         food_name: newName,
                         cal: Number(newCal),
