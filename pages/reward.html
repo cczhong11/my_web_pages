@@ -122,6 +122,27 @@
           <!-- Logs will be dynamically inserted here -->
         </div>
       </div>
+      <!-- Submission Calendar Section -->
+      <div
+        id="submission-calendar-container"
+        class="mt-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"
+      >
+        <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+          提交日历
+        </h2>
+        <div class="flex items-center mb-4">
+          <label for="calendar-item-select" class="mr-2 dark:text-gray-300"
+            >选择项目:</label
+          >
+          <select
+            id="calendar-item-select"
+            class="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+          ></select>
+        </div>
+        <div id="calendar-grid" class="grid grid-cols-7 gap-1">
+          <!-- Calendar grid will be dynamically inserted here -->
+        </div>
+      </div>
     </div>
 
     <!-- Modal for Create/Edit Item -->
@@ -314,6 +335,10 @@
         const cancelBtn = document.getElementById("cancel-btn");
         const toast = document.getElementById("toast");
         const toastMessage = document.getElementById("toast-message");
+        const calendarItemSelect = document.getElementById(
+          "calendar-item-select"
+        );
+        const calendarGrid = document.getElementById("calendar-grid");
 
         // --- API FUNCTIONS ---
         const API_BASE_URL = "https://api.tczhong.com/reward";
@@ -569,6 +594,117 @@
           }
         };
 
+        // --- CALENDAR (GitHub-style) ---
+        const populateCalendarItemSelect = () => {
+          if (!calendarItemSelect) return;
+          const prev = calendarItemSelect.value;
+          calendarItemSelect.innerHTML = "";
+          rewardItems.forEach((item) => {
+            const opt = document.createElement("option");
+            opt.value = item.item_id;
+            opt.textContent = item.name;
+            calendarItemSelect.appendChild(opt);
+          });
+          if (
+            prev &&
+            Array.from(calendarItemSelect.options).some((o) => o.value === prev)
+          ) {
+            calendarItemSelect.value = prev;
+          }
+        };
+
+        const renderCalendarGrid = async (itemId) => {
+          if (!calendarGrid) return;
+          // 请求节流与竞态避免：为本次渲染生成唯一ID，只有最后一次请求才会写入DOM
+          const rid = parseInt(calendarGrid.dataset.reqId || "0", 10) + 1;
+          calendarGrid.dataset.reqId = String(rid);
+          calendarGrid.innerHTML =
+            '<div class="text-sm text-gray-500 dark:text-gray-400">加载中...</div>';
+          if (!itemId) {
+            calendarGrid.innerHTML = "";
+            return;
+          }
+
+          const today = new Date();
+          const end = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          );
+          const start = new Date(end);
+          start.setDate(start.getDate() - 364);
+
+          // Align start to the previous Sunday for GitHub-like columns
+          const startWeek = new Date(start);
+          startWeek.setDate(startWeek.getDate() - startWeek.getDay());
+          const endInclusive = new Date(
+            end.getTime() + 24 * 60 * 60 * 1000 - 1
+          );
+
+          const res = await api.getLogs({
+            user_id: CURRENT_USER_ID,
+            item_id: itemId,
+            start_time: startWeek.toISOString(),
+            end_time: endInclusive.toISOString(),
+          });
+
+          const done = new Set();
+          if (res.status === "success" && Array.isArray(res.data)) {
+            // 后端可能未按 item_id 过滤，这里前端再按选中项目过滤一遍
+            const list = res.data.filter((log) => log.item_id === itemId);
+            list.forEach((log) => {
+              const key = new Date(log.timestamp).toISOString().slice(0, 10);
+              done.add(key);
+            });
+          }
+
+          // Horizontal week columns, 7 rows (days)
+          // 若期间用户切换了下拉项，放弃本次渲染
+          if (rid !== parseInt(calendarGrid.dataset.reqId || "0", 10)) {
+            return;
+          }
+          calendarGrid.className = "flex gap-1 overflow-x-auto";
+          calendarGrid.innerHTML = "";
+
+          let d = new Date(startWeek);
+          while (d <= end) {
+            const col = document.createElement("div");
+            col.className = "flex flex-col gap-1";
+            for (let i = 0; i < 7; i++) {
+              const cellDate = new Date(d);
+              const key = cellDate.toISOString().slice(0, 10);
+              const inRange = cellDate >= start && cellDate <= end;
+              const isDone = inRange && done.has(key);
+
+              const square = document.createElement("div");
+              square.className = `w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-sm border border-black/5 dark:border-white/10 ${
+                inRange
+                  ? isDone
+                    ? "bg-green-600 dark:bg-green-500"
+                    : "bg-gray-200 dark:bg-gray-700"
+                  : "bg-transparent"
+              }`;
+              square.title = `${key}${isDone ? " ✅" : ""}`;
+              col.appendChild(square);
+
+              d.setDate(d.getDate() + 1);
+            }
+            calendarGrid.appendChild(col);
+          }
+        };
+
+        const renderCalendar = async () => {
+          populateCalendarItemSelect();
+          const selected =
+            calendarItemSelect.value ||
+            (rewardItems[0] && rewardItems[0].item_id) ||
+            "";
+          if (!calendarItemSelect.value && selected) {
+            calendarItemSelect.value = selected;
+          }
+          await renderCalendarGrid(selected);
+        };
+
         // --- MODAL & FORM HANDLING ---
         const showModal = (isUpdate = false, item = null) => {
           itemForm.reset();
@@ -630,6 +766,9 @@
 
         createItemBtn.addEventListener("click", () => showModal());
         cancelBtn.addEventListener("click", hideModal);
+        calendarItemSelect.addEventListener("change", (e) => {
+          renderCalendarGrid(e.target.value);
+        });
 
         // --- EVENT LISTENERS ---
         itemsTableBody.addEventListener("click", async (e) => {
@@ -715,15 +854,16 @@
           }, 3000);
         };
 
-        // --- INITIALIZATION ---
-        const renderAll = async () => {
-          await renderItems(); // Must run before renderLogs to populate rewardItems
-          await renderScores();
-          await renderLogs();
-        };
-
-        renderAll();
-      });
-    </script>
-  </body>
-</html>
+                // --- INITIALIZATION ---
+                const renderAll = async () => {
+                  await renderItems(); // Must run before renderLogs to populate rewardItems
+                  await renderScores();
+                  await renderLogs();
+                  await renderCalendar();
+                };
+                
+                renderAll();
+              });
+            </script>
+          </body>
+        </html>
