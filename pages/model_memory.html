@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>大模型显存/内存计算器</title>
+    <link rel="stylesheet" href="../style.css" />
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [["$","$"], ["\\(","\\)"]] },
+        svg: { fontCache: 'global' }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+    <style>
+      :root {
+        --card-bg: #ffffff;
+        --muted: #6b7280;
+        --accent: #2563eb;
+        --soft: #f3f4f6;
+      }
+      body { background: #f7fafc; }
+      header h1 { margin-bottom: 0.25rem; }
+      header p { color: var(--muted); margin-top: 0; }
+      .container { max-width: 1000px; margin: 0 auto; padding: 16px; }
+      .grid { display: grid; gap: 16px; }
+      .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+      .card { background: var(--card-bg); border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+      .card h2 { margin-top: 0; font-size: 1.1rem; }
+      .row { display: grid; grid-template-columns: 200px 1fr; gap: 10px; align-items: center; margin: 10px 0; }
+      .row label { color: #111827; font-weight: 600; }
+      .row .hint { color: var(--muted); font-weight: 400; }
+      input[type="number"], select { width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; }
+      .inline { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .muted { color: var(--muted); font-size: 0.9rem; }
+      .pill { background: var(--soft); padding: 4px 8px; border-radius: 999px; font-size: 12px; color: #374151; }
+      .total { font-size: 1.4rem; font-weight: 800; color: #111827; }
+      .kicker { font-weight: 700; color: var(--accent); }
+      .section-title { margin: 0 0 6px; font-size: 0.95rem; color: #111827; }
+      .small { font-size: 0.85rem; color: var(--muted); }
+      .hr { height: 1px; background: #e5e7eb; margin: 10px 0; }
+      .note { background: #fffbeb; border: 1px solid #fde68a; padding: 10px; border-radius: 8px; color: #92400e; }
+      .stack { display: grid; gap: 8px; }
+      .tight { margin: 0; }
+      .btn-link { color: var(--accent); cursor: pointer; text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>大模型显存/内存计算器</h1>
+        <p>按场景一步步估算 Dense 与 MoE 的内存占用（推理/训练）。</p>
+      </header>
+
+      <div class="grid grid-2">
+        <!-- Step 1: 选择预设/自定义 -->
+        <section class="card">
+          <h2>步骤 1：选择模型或预设</h2>
+          <div class="row">
+            <label for="preset">模型预设</label>
+            <div class="inline" style="gap: 10px; width: 100%">
+              <select id="preset">
+                <option value="custom">自定义</option>
+                <option value="llama2_7b">LLaMA 7B（Dense）</option>
+                <option value="llama2_13b">LLaMA 13B（Dense）</option>
+                <option value="llama2_70b">LLaMA 70B（Dense）</option>
+                <option value="mistral_7b">Mistral 7B（Dense）</option>
+                <option value="mixtral_8x7b">Mixtral 8×7B（MoE，激活≈12.9B）</option>
+                <option value="gpt2_xl">GPT‑2 XL 1.5B（Dense）</option>
+              </select>
+              <span class="pill">可编辑参数</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <label for="arch">架构</label>
+            <select id="arch">
+              <option value="dense">Dense</option>
+              <option value="moe">MoE</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label for="params_total">总参数量（B）</label>
+            <input id="params_total" type="number" step="0.1" min="0" value="7" />
+          </div>
+
+          <div class="row" id="moe_active_params_row" style="display:none;">
+            <label for="params_active">激活参数量（B）</label>
+            <input id="params_active" type="number" step="0.1" min="0" value="12.9" />
+          </div>
+
+          <div class="row">
+            <label for="hidden_size">隐藏维度 d</label>
+            <input id="hidden_size" type="number" step="1" min="1" value="4096" />
+          </div>
+
+          <div class="row">
+            <label for="num_layers">层数</label>
+            <input id="num_layers" type="number" step="1" min="1" value="32" />
+          </div>
+
+          <div class="row">
+            <label for="seq_len">默认序列长 L</label>
+            <input id="seq_len" type="number" step="1" min="1" value="2048" />
+          </div>
+        </section>
+
+        <!-- Step 2: 场景与精度 -->
+        <section class="card">
+          <h2>步骤 2：选择场景与精度</h2>
+          <div class="row">
+            <label for="scenario">场景</label>
+            <select id="scenario">
+              <option value="inference">推理</option>
+              <option value="training">训练</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label for="dtype_w">权重精度</label>
+            <select id="dtype_w">
+              <option value="fp16">FP16</option>
+              <option value="bf16">BF16</option>
+              <option value="fp32">FP32</option>
+              <option value="int8">INT8（仅推理）</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label for="dtype_a">激活精度</label>
+            <select id="dtype_a">
+              <option value="fp16">FP16</option>
+              <option value="bf16">BF16</option>
+              <option value="fp32">FP32</option>
+            </select>
+          </div>
+
+          <div id="moe_load_row" class="row" style="display:none;">
+            <label>MoE 参数装载策略</label>
+            <div class="inline">
+              <label class="inline"><input type="radio" name="moe_load" value="active" checked /> 仅激活专家</label>
+              <label class="inline"><input type="radio" name="moe_load" value="full" /> 全量权重</label>
+              <span class="muted">单机/未分片时可能需全量装载</span>
+            </div>
+          </div>
+
+          <div id="moe_overhead_row" class="row" style="display:none;">
+            <label for="moe_overhead">MoE 额外系数</label>
+            <div class="inline">
+              <input id="moe_overhead" type="number" step="0.01" min="1.0" value="1.20" />
+              <span class="muted">训练近似 1.1–1.3× 同规模 Dense</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 3: 批量与长度、附加项 -->
+        <section class="card">
+          <h2>步骤 3：批量与长度</h2>
+          <div class="row">
+            <label for="batch_size">批量大小 B</label>
+            <input id="batch_size" type="number" step="1" min="1" value="1" />
+          </div>
+          <div class="row">
+            <label for="seq_len_run">序列长 L</label>
+            <input id="seq_len_run" type="number" step="1" min="1" value="2048" />
+          </div>
+
+          <div id="train_only_box" class="stack" style="display:none;">
+            <div class="row">
+              <label for="act_mult">训练激活倍数</label>
+              <div class="inline">
+                <input id="act_mult" type="number" step="0.1" min="1" value="2.5" />
+                <span class="muted">反向需额外缓存，常见 2–3×</span>
+              </div>
+            </div>
+            <div class="row">
+              <label for="extra_frac">额外缓冲系数</label>
+              <div class="inline">
+                <input id="extra_frac" type="number" step="0.01" min="0" value="0.10" />
+                <span class="muted">通信/临时张量等，约 0.1–0.2×W</span>
+              </div>
+            </div>
+            <div class="row">
+              <label for="opt_factor">优化器开销系数</label>
+              <div class="inline">
+                <input id="opt_factor" type="number" step="0.1" min="0" value="2.0" />
+                <span class="muted">Adam m,v≈2×W；梯度≈1×W；权重≈1×W</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 4: 结果 -->
+        <section class="card">
+          <h2>步骤 4：结果与拆解</h2>
+          <div class="stack">
+            <div class="inline">
+              <span class="kicker">总内存估算：</span>
+              <span id="total_mem" class="total">—</span>
+            </div>
+            <div id="breakdown" class="stack"></div>
+            <div class="hr"></div>
+            <div class="note small">
+              说明：
+              推理≈ 权重 + 激活 + 临时缓冲；
+              训练≈ 权重W + 梯度W + 优化器O(≈2W) + 激活(≈2–3×推理) + 额外缓冲(≈0.1–0.2W)。
+              MoE 训练整体常略高于同激活参数量的 Dense（约 1.1–1.3×）。
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>参考与默认值</h2>
+        <ul class="small">
+          <li>LLaMA 7B：d=4096，层数=32，默认 L=2048；FP16 权重≈14GB。</li>
+          <li>LLaMA 13B：d=5120，层数=40；L=2048。</li>
+          <li>LLaMA 70B：d=8192，层数=80；L=4096。</li>
+          <li>Mistral 7B：d=4096，层数=32；常见上下文 8K。</li>
+          <li>Mixtral 8×7B（MoE）：总参数≈46.7B，单步激活≈12.9B；d≈4096，层≈32。</li>
+          <li>GPT‑2 XL：1.5B，d≈1600，层≈48；L=1024。</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>计算公式</h2>
+        <div class="stack small">
+          <div>
+            <div class="section-title">数据类型字节数</div>
+            <div>FP32: $b=4$ 字节/参数；FP16/BF16: $b=2$；INT8: $b=1$（仅推理权重）。</div>
+          </div>
+          <div>
+            <div class="section-title">权重存储（Weights）</div>
+            <div>
+              设参数量 $P$（单位：十亿参数 B），则实际参数数为 $P\times10^9$。
+              权重字节数：$\; W = (P_\text{load}\times10^9) \times b$。
+              <span class="muted">MoE 中 $P_\text{load}$ 可为激活参数 $P_\text{active}$ 或全量 $P_\text{total}$。</span>
+            </div>
+          </div>
+          <div>
+            <div class="section-title">激活缓存（Activations）</div>
+            <div>
+              单层激活：$\; A_\text{layer} = B \times L \times d \times b_a$；
+              全模型：$\; A_\text{infer} = B \times L \times d \times N_\text{layers} \times b_a$。
+            </div>
+          </div>
+          <div>
+            <div class="section-title">推理内存（Inference）</div>
+            <div>
+              $\text{Mem}_\text{infer} \approx W + A_\text{infer} + \text{Temp}$，其中 $\text{Temp}$ 为临时缓冲（可近似 0–0.1$W$）。
+            </div>
+          </div>
+          <div>
+            <div class="section-title">训练内存（Training, 以 Adam 为例）</div>
+            <div>
+              $\text{Mem}_\text{train} \approx W + G + O + A_\text{train} + \text{Extra}$，
+              其中 $G\!\approx\!W$，$O\!\approx\!\text{opt}\_\text{factor}\times W$（Adam 常取 2），
+              $A_\text{train}\!\approx\!k\times A_\text{infer}$（$k\in[2,3]$），$\text{Extra}\!\approx\!\alpha\times W$（$\alpha\in[0.1,0.2]$）。
+              因此：
+              $$\text{Mem}_\text{train} \approx (2 + \text{opt}\_\text{factor} + \alpha)\,W + k\,A_\text{infer}$$
+              典型值（opt=2, $\alpha=0.1$）：$\;\approx 4.1\,W + k\,A_\text{infer}$。
+            </div>
+          </div>
+          <div>
+            <div class="section-title">MoE 额外开销</div>
+            <div>
+              训练期整体常略高于同激活参数的 Dense：
+              $$\text{Mem}_\text{train}^{\text{MoE}} \approx \beta\;\text{Mem}_\text{train}^{\text{Dense}}(P_\text{active}),\quad \beta\in[1.1,1.3]$$
+              推理期权重按策略装载：$P_\text{load}\in\{P_\text{active}, P_\text{total}\}$。
+            </div>
+          </div>
+          <div>
+            <div class="section-title">示例（7B，FP16，$d=4096$，$N_\text{layers}=32$，$L=2048$，$B=1$）</div>
+            <div>
+              权重：$W = 7\times10^9\times 2\,\text{B} \approx 14\,\text{GB}$；
+              单层激活：$A_\text{layer} = 1\times2048\times4096\times2\,\text{B} \approx 16\,\text{MB}$；
+              全模型激活：$A_\text{infer} \approx 16\,\text{MB}\times32 \approx 512\,\text{MB}$；
+              推理总计：$\approx 14.5\,\text{GB}$；
+              训练总计（$k=3$，opt=2，$\alpha=0.1$）：$\approx 4.1\times14\,+\,3\times0.5 \approx 57.5\,\text{GB}$。
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      // --- Helpers ---
+      const $ = (id) => document.getElementById(id);
+      const dtypeBytes = (dtype) => ({ fp32: 4, fp16: 2, bf16: 2, int8: 1 })[dtype] || 2;
+      const toBytes = (billions, bytesPerParam) => (billions * 1e9) * bytesPerParam;
+      const fmt = (bytes) => {
+        if (!isFinite(bytes)) return '—';
+        const GB = 1024 ** 3;
+        const MB = 1024 ** 2;
+        if (bytes >= GB) return (bytes / GB).toFixed(2) + ' GB';
+        if (bytes >= MB) return (bytes / MB).toFixed(2) + ' MB';
+        return bytes.toFixed(0) + ' B';
+      };
+      const clampNum = (v, def=0) => (isFinite(v) && v >= 0 ? v : def);
+
+      // Presets (可在此处增删)
+      const PRESETS = {
+        custom: { arch: 'dense', params_total: 7, params_active: 12.9, d: 4096, layers: 32, L: 2048 },
+        llama2_7b: { arch: 'dense', params_total: 7, d: 4096, layers: 32, L: 2048 },
+        llama2_13b: { arch: 'dense', params_total: 13, d: 5120, layers: 40, L: 2048 },
+        llama2_70b: { arch: 'dense', params_total: 70, d: 8192, layers: 80, L: 4096 },
+        mistral_7b: { arch: 'dense', params_total: 7, d: 4096, layers: 32, L: 8192 },
+        mixtral_8x7b: { arch: 'moe', params_total: 46.7, params_active: 12.9, d: 4096, layers: 32, L: 4096 },
+        gpt2_xl: { arch: 'dense', params_total: 1.5, d: 1600, layers: 48, L: 1024 },
+      };
+
+      function applyPreset(key) {
+        const p = PRESETS[key] || PRESETS.custom;
+        $('arch').value = p.arch || 'dense';
+        $('params_total').value = p.params_total;
+        $('hidden_size').value = p.d;
+        $('num_layers').value = p.layers;
+        $('seq_len').value = p.L;
+        $('seq_len_run').value = p.L;
+        if (p.arch === 'moe') {
+          $('params_active').value = p.params_active || 12.9;
+        }
+        handleArchVisibility();
+        recalc();
+      }
+
+      function handleArchVisibility() {
+        const arch = $('arch').value;
+        const isMoE = arch === 'moe';
+        $('moe_active_params_row').style.display = isMoE ? '' : 'none';
+        $('moe_load_row').style.display = isMoE ? '' : 'none';
+        $('moe_overhead_row').style.display = (isMoE && $('scenario').value === 'training') ? '' : 'none';
+      }
+
+      function handleScenarioVisibility() {
+        const sc = $('scenario').value;
+        const train = sc === 'training';
+        $('train_only_box').style.display = train ? '' : 'none';
+        // INT8 仅推理
+        const dtypeW = $('dtype_w');
+        for (const opt of dtypeW.options) {
+          if (opt.value === 'int8') opt.disabled = train; // disable INT8 in training
+        }
+        if (train && dtypeW.value === 'int8') dtypeW.value = 'fp16';
+        handleArchVisibility();
+      }
+
+      function getMoELoadMode() {
+        const radios = document.querySelectorAll('input[name="moe_load"]');
+        for (const r of radios) if (r.checked) return r.value;
+        return 'active';
+      }
+
+      function recalc() {
+        const arch = $('arch').value;
+        const scenario = $('scenario').value;
+        const dtypeW = $('dtype_w').value;
+        const dtypeA = $('dtype_a').value;
+
+        const paramsTotalB = clampNum(parseFloat($('params_total').value), 0);
+        const paramsActiveB = arch === 'moe' ? clampNum(parseFloat($('params_active').value), 0) : paramsTotalB;
+        const d = Math.max(1, Math.floor(clampNum(parseFloat($('hidden_size').value), 1)));
+        const layers = Math.max(1, Math.floor(clampNum(parseFloat($('num_layers').value), 1)));
+        const B = Math.max(1, Math.floor(clampNum(parseFloat($('batch_size').value), 1)));
+        const L = Math.max(1, Math.floor(clampNum(parseFloat($('seq_len_run').value), 1)));
+
+        const bytesW = dtypeBytes(dtypeW);
+        const bytesA = dtypeBytes(dtypeA);
+
+        // 权重（MoE 可选择仅激活或全量）
+        const moeLoad = arch === 'moe' ? getMoELoadMode() : 'active';
+        const paramsForWeightsB = (arch === 'moe' && moeLoad === 'full') ? paramsTotalB : paramsActiveB;
+        const W = toBytes(paramsForWeightsB, bytesW);
+
+        // 激活（粗略）：B * L * d * layers * bytes
+        const A_infer = B * L * d * layers * bytesA;
+
+        const breakdown = [];
+        let total = 0;
+
+        if (scenario === 'inference') {
+          // 推理：权重 + 激活 + 临时
+          const tempFrac = 0.0; // 给个保守 0，用户按需上调
+          const tempBuf = W * tempFrac;
+          total = W + A_infer + tempBuf;
+          breakdown.push(['权重', W]);
+          breakdown.push(['激活缓存', A_infer]);
+          if (tempBuf > 0) breakdown.push(['临时缓冲', tempBuf]);
+        } else {
+          // 训练：W + G + O + A_train + 额外缓冲
+          const actMult = clampNum(parseFloat($('act_mult').value), 2.5);
+          const extraFrac = clampNum(parseFloat($('extra_frac').value), 0.1);
+          const optFactor = clampNum(parseFloat($('opt_factor').value), 2.0);
+
+          const G = W;                // 梯度 ~ W
+          const O = W * optFactor;    // Adam m,v ~ 2W
+          const A_train = A_infer * actMult;
+          let subtotal = W + G + O + A_train + (W * extraFrac);
+
+          if (arch === 'moe') {
+            const moeOH = clampNum(parseFloat($('moe_overhead').value), 1.2);
+            subtotal *= moeOH; // 近似 MoE 额外开销
+            breakdown.push(['MoE 额外系数 ×' + moeOH.toFixed(2), 0]);
+          }
+
+          total = subtotal;
+          breakdown.push(['权重 W', W]);
+          breakdown.push(['梯度 G ≈ W', G]);
+          breakdown.push(['优化器 O ≈ ' + optFactor.toFixed(1) + '×W', O]);
+          breakdown.push(['训练激活 A ≈ ' + actMult.toFixed(1) + '×推理', A_train]);
+          breakdown.push(['额外缓冲 ≈ ' + (extraFrac*100).toFixed(0) + '% × W', W * extraFrac]);
+        }
+
+        $('total_mem').textContent = fmt(total);
+
+        const bd = $('breakdown');
+        bd.innerHTML = '';
+        breakdown.forEach(([name, val]) => {
+          const line = document.createElement('div');
+          line.className = 'inline';
+          const label = document.createElement('div');
+          const value = document.createElement('div');
+          label.innerHTML = `<strong>${name}</strong>`;
+          value.textContent = fmt(val);
+          value.style.marginLeft = '8px';
+          bd.appendChild(line);
+          line.appendChild(label);
+          line.appendChild(value);
+        });
+      }
+
+      // --- Events ---
+      $('preset').addEventListener('change', (e) => applyPreset(e.target.value));
+      ['arch','scenario','dtype_w','dtype_a','params_total','params_active','hidden_size','num_layers','batch_size','seq_len','seq_len_run','act_mult','extra_frac','opt_factor','moe_overhead'].forEach(id => {
+        const el = $(id); if (el) el.addEventListener('input', () => { if (id==='seq_len') $('seq_len_run').value = $('seq_len').value; recalc(); });
+        if (el) el.addEventListener('change', () => { handleArchVisibility(); handleScenarioVisibility(); recalc(); });
+      });
+      document.querySelectorAll('input[name="moe_load"]').forEach(r => r.addEventListener('change', recalc));
+
+      $('arch').addEventListener('change', handleArchVisibility);
+      $('scenario').addEventListener('change', handleScenarioVisibility);
+
+      // Init defaults
+      window.addEventListener('DOMContentLoaded', () => {
+        $('dtype_w').value = 'fp16';
+        $('dtype_a').value = 'fp16';
+        applyPreset('llama2_7b');
+        handleScenarioVisibility();
+        recalc();
+      });
+    </script>
+  </body>
+  </html>
