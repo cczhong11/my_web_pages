@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="icon-volcano-title">
+  <title id="icon-volcano-title">Volcano icon</title>
+  <rect width="64" height="64" rx="12" fill="#111827" />
+  <path d="M20 50L32 22L44 50Z" fill="#4B5563" />
+  <path d="M32 22L36 30H28Z" fill="#F97316" />
+  <path d="M24 38L20 50H44L40 38Z" fill="#6B7280" />
+  <path d="M30 16C30 13.79 31.79 12 34 12C36.21 12 38 13.79 38 16C38 17.1 37.62 18.46 36.91 19.57" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" fill="none" />
+  <path d="M28 14C28 11.24 30.24 9 33 9" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" fill="none" />
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="icon-credit-title">
+  <title id="icon-credit-title">Credit card rewards icon</title>
+  <rect width="64" height="64" rx="12" fill="#1F2937" />
+  <rect x="12" y="18" width="40" height="28" rx="6" fill="#1D4ED8" />
+  <rect x="12" y="24" width="40" height="6" fill="#2563EB" opacity="0.7" />
+  <rect x="18" y="38" width="10" height="4" rx="1" fill="#BFDBFE" />
+  <rect x="32" y="36" width="16" height="6" rx="2" fill="#F59E0B" />
+  <path d="M44.5 17.5L46.6 21.6L51.1 22.2L47.8 25.4L48.6 29.9L44.5 27.8L40.4 29.9L41.2 25.4L37.9 22.2L42.4 21.6L44.5 17.5Z" fill="#FBBF24" />
+</svg>

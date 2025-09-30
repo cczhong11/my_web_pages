@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="icon-hotel-points-title">
+  <title id="icon-hotel-points-title">Hotel points icon</title>
+  <rect width="64" height="64" rx="12" fill="#1E3A8A" />
+  <rect x="18" y="18" width="28" height="30" rx="4" fill="#EFF6FF" />
+  <rect x="22" y="24" width="6" height="6" rx="1" fill="#2563EB" />
+  <rect x="30" y="24" width="6" height="6" rx="1" fill="#2563EB" />
+  <rect x="38" y="24" width="6" height="6" rx="1" fill="#2563EB" />
+  <rect x="22" y="34" width="6" height="6" rx="1" fill="#2563EB" />
+  <rect x="30" y="34" width="6" height="6" rx="1" fill="#2563EB" />
+  <rect x="38" y="34" width="6" height="6" rx="1" fill="#2563EB" />
+  <rect x="28" y="42" width="8" height="6" rx="1" fill="#1E3A8A" />
+  <path d="M50.5 16.5L53.3 22L59.5 22.9L55 27.3L56 33.5L50.5 30.6L45 33.5L46 27.3L41.5 22.9L47.7 22L50.5 16.5Z" fill="#FBBF24" />
+</svg>

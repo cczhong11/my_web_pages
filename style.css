@@ -26,6 +26,37 @@ h2 {
   padding-bottom: 0.3em;
 }
 
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #0366d6;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.button-link:hover {
+  background-color: #024c9d;
+  transform: translateY(-1px);
+}
+
+.button-link .link-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.page-icon {
+  width: 72px;
+  height: 72px;
+  display: block;
+  margin: 0 auto 16px auto;
+}
+
 footer {
   margin-top: 30px;
   padding: 20px;

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="icon-reward-title">
+  <title id="icon-reward-title">Reward system icon</title>
+  <rect width="64" height="64" rx="12" fill="#7C2D12" />
+  <path d="M22 20H42C42 26 38 32 32 32C26 32 22 26 22 20Z" fill="#F97316" />
+  <rect x="28" y="32" width="8" height="6" fill="#FDE68A" />
+  <path d="M24 24C20 24 17 21 17 17H22" stroke="#FCD34D" stroke-width="3" stroke-linecap="round" />
+  <path d="M40 24C44 24 47 21 47 17H42" stroke="#FCD34D" stroke-width="3" stroke-linecap="round" />
+  <path d="M24 38H40L38 50H26L24 38Z" fill="#F97316" />
+  <path d="M28 50H36V54H28V50Z" fill="#FDE68A" />
+  <path d="M30 16L32 12L34 16" stroke="#FDE68A" stroke-width="2" stroke-linecap="round" />
+</svg>

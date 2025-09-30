@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="icon-milkway-title">
+  <title id="icon-milkway-title">Milky Way calendar icon</title>
+  <rect width="64" height="64" rx="12" fill="#1E1B4B" />
+  <circle cx="24" cy="24" r="2.5" fill="#F9FAFB" />
+  <circle cx="40" cy="18" r="1.8" fill="#E0F2FE" />
+  <circle cx="48" cy="32" r="1.6" fill="#FDE68A" />
+  <path d="M15 34C25 24 39 26 47 18" stroke="#C4B5FD" stroke-width="3" stroke-linecap="round" />
+  <path d="M17 42C29 35 43 40 49 30" stroke="#818CF8" stroke-width="3" stroke-linecap="round" />
+  <path d="M28 40C32 42 37 43 41 41" stroke="#F472B6" stroke-width="2" stroke-linecap="round" />
+  <circle cx="32" cy="32" r="6" fill="none" stroke="#FCD34D" stroke-width="2" stroke-dasharray="2 3" />
+</svg>
