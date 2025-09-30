@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="icon-home-title">
+  <title id="icon-home-title">Site home icon</title>
+  <rect width="64" height="64" rx="12" fill="#0F172A" />
+  <path d="M16 30L32 16L48 30V48C48 49.1046 47.1046 50 46 50H18C16.8954 50 16 49.1046 16 48V30Z" fill="#1D4ED8" />
+  <path d="M26 50V36H38V50" fill="#60A5FA" />
+  <path d="M20 28L32 18L44 28" stroke="#BFDBFE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="28" y="40" width="8" height="10" rx="1" fill="#0F172A" />
+</svg>
