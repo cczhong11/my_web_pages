@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>股票决策管理</title>
+    <link rel="icon" type="image/svg+xml" href="../icons/stock.svg" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f3f4f6;
+      }
+      .dark body {
+        background-color: #111827;
+      }
+      .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.45);
+      }
+      .toast {
+        transition: opacity 0.3s, transform 0.3s;
+      }
+      th,
+      td {
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body class="text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+    <div class="container mx-auto p-4 md:p-8">
+      <!-- Header -->
+      <header class="mb-8 text-center">
+        <img
+          src="../icons/stock.svg"
+          alt="股票决策图标"
+          class="mx-auto mb-4 h-16 w-16"
+        />
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          股票决策管理
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">
+          记录、查询和维护股票买入/卖出的历史决策。
+        </p>
+      </header>
+
+      <!-- Filters -->
+      <section
+        class="mb-6 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-4"
+      >
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+            决策列表
+          </h2>
+          <button
+            id="create-decision-btn"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-transform transform hover:scale-105"
+          >
+            新增决策
+          </button>
+        </div>
+        <form
+          id="filter-form"
+          class="grid gap-4 md:grid-cols-4 sm:grid-cols-2 grid-cols-1"
+        >
+          <div>
+            <label
+              for="filter-stock-name"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >股票名称</label
+            >
+            <input
+              type="text"
+              id="filter-stock-name"
+              name="stock_name"
+              placeholder="例如: TSLA"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+            />
+          </div>
+          <div>
+            <label
+              for="filter-start"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >开始时间</label
+            >
+            <input
+              type="datetime-local"
+              id="filter-start"
+              name="start_decided_at"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+            />
+          </div>
+          <div>
+            <label
+              for="filter-end"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >结束时间</label
+            >
+            <input
+              type="datetime-local"
+              id="filter-end"
+              name="end_decided_at"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+            />
+          </div>
+          <div>
+            <label
+              for="filter-order"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >排序</label
+            >
+            <select
+              id="filter-order"
+              name="order"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+            >
+              <option value="desc">按时间倒序</option>
+              <option value="asc">按时间正序</option>
+            </select>
+          </div>
+          <div class="md:col-span-4 flex gap-3">
+            <button
+              type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+            >
+              应用筛选
+            </button>
+            <button
+              type="button"
+              id="reset-filters-btn"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 font-semibold py-2 px-4 rounded-lg"
+            >
+              重置
+            </button>
+            <button
+              type="button"
+              id="refresh-list-btn"
+              class="ml-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold py-2 px-4 rounded-lg"
+            >
+              刷新
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- List -->
+      <section class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div class="overflow-x-auto">
+          <table class="min-w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th
+                  class="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  股票
+                </th>
+                <th
+                  class="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  当前价
+                </th>
+                <th
+                  class="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  买入价
+                </th>
+                <th
+                  class="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  数量
+                </th>
+                <th
+                  class="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  金额
+                </th>
+                <th
+                  class="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  决策时间
+                </th>
+                <th
+                  class="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  理由
+                </th>
+                <th
+                  class="py-3 px-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  复盘
+                </th>
+                <th
+                  class="py-3 px-4 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  操作
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              id="decisions-table-body"
+              class="divide-y divide-gray-200 dark:divide-gray-700"
+            ></tbody>
+          </table>
+        </div>
+        <div
+          id="empty-state"
+          class="hidden py-12 text-center text-gray-500 dark:text-gray-400"
+        >
+          暂无数据，尝试调整筛选条件或新增一条决策。
+        </div>
+      </section>
+    </div>
+
+    <!-- Modal -->
+    <div
+      id="decision-modal"
+      class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-2xl m-4 max-h-[90vh] overflow-y-auto"
+      >
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h2
+              id="modal-title"
+              class="text-2xl font-bold text-gray-900 dark:text-white"
+            >
+              新增股票决策
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              完整填写关键信息有助于后续复盘。
+            </p>
+          </div>
+          <button
+            type="button"
+            id="close-modal-btn"
+            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            aria-label="关闭"
+          >
+            ✕
+          </button>
+        </div>
+        <form id="decision-form" class="space-y-4">
+          <input type="hidden" id="decision-id-input" />
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label
+                for="stock-name-input"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >股票名称 *</label
+              >
+              <input
+                type="text"
+                id="stock-name-input"
+                name="stock_name"
+                required
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+              />
+            </div>
+            <div>
+              <label
+                for="current-price-input"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >当前价格</label
+              >
+              <input
+                type="number"
+                step="0.0001"
+                id="current-price-input"
+                name="current_price"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+              />
+            </div>
+            <div>
+              <label
+                for="buy-price-input"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >买入价格</label
+              >
+              <input
+                type="number"
+                step="0.0001"
+                id="buy-price-input"
+                name="buy_price"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+              />
+            </div>
+            <div>
+              <label
+                for="amount-input"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >数量</label
+              >
+              <input
+                type="number"
+                step="0.0001"
+                id="amount-input"
+                name="amount"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+              />
+            </div>
+            <div>
+              <label
+                for="money-input"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >金额</label
+              >
+              <input
+                type="number"
+                step="0.01"
+                id="money-input"
+                name="money"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+              />
+            </div>
+            <div>
+              <label
+                for="decided-at-input"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >决策时间</label
+              >
+              <input
+                type="datetime-local"
+                id="decided-at-input"
+                name="decided_at"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+              />
+            </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label
+                for="reason-input"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >决策理由</label
+              >
+              <textarea
+                id="reason-input"
+                name="reason"
+                rows="3"
+                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+              ></textarea>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label
+                  for="yesterday-change-input"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >昨日涨跌幅 (%)</label
+                >
+                <input
+                  type="number"
+                  step="0.0001"
+                  id="yesterday-change-input"
+                  name="yesterday_change"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+                />
+              </div>
+              <div>
+                <label
+                  for="last-month-change-input"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >最近一月涨跌幅 (%)</label
+                >
+                <input
+                  type="number"
+                  step="0.0001"
+                  id="last-month-change-input"
+                  name="last_month_change"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+                />
+              </div>
+              <div>
+                <label
+                  for="review-input"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >复盘/评价</label
+                >
+                <textarea
+                  id="review-input"
+                  name="review"
+                  rows="3"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              id="cancel-modal-btn"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 font-semibold py-2 px-4 rounded-lg"
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              id="save-decision-btn"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+            >
+              保存
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div
+      id="toast"
+      class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 transform translate-y-2 toast"
+    >
+      <span id="toast-message"></span>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const API_BASE_URL = "http://api.tczhong.com/stock-decision";
+
+        const decisionsTableBody = document.getElementById(
+          "decisions-table-body"
+        );
+        const emptyState = document.getElementById("empty-state");
+        const filterForm = document.getElementById("filter-form");
+        const resetFiltersBtn = document.getElementById("reset-filters-btn");
+        const refreshListBtn = document.getElementById("refresh-list-btn");
+        const createDecisionBtn = document.getElementById(
+          "create-decision-btn"
+        );
+        const modal = document.getElementById("decision-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const closeModalBtn = document.getElementById("close-modal-btn");
+        const cancelModalBtn = document.getElementById("cancel-modal-btn");
+        const decisionForm = document.getElementById("decision-form");
+        const decisionIdInput = document.getElementById("decision-id-input");
+        const toast = document.getElementById("toast");
+        const toastMessage = document.getElementById("toast-message");
+
+        const formFields = {
+          stock_name: document.getElementById("stock-name-input"),
+          current_price: document.getElementById("current-price-input"),
+          buy_price: document.getElementById("buy-price-input"),
+          amount: document.getElementById("amount-input"),
+          money: document.getElementById("money-input"),
+          reason: document.getElementById("reason-input"),
+          yesterday_change: document.getElementById("yesterday-change-input"),
+          last_month_change: document.getElementById("last-month-change-input"),
+          review: document.getElementById("review-input"),
+          decided_at: document.getElementById("decided-at-input"),
+        };
+
+        let decisions = [];
+        let isSaving = false;
+
+        const api = {
+          async list(params) {
+            const url = new URL(API_BASE_URL + "/");
+            Object.keys(params || {}).forEach((key) => {
+              if (params[key]) {
+                url.searchParams.append(key, params[key]);
+              }
+            });
+            const response = await fetch(url.toString());
+            return response.json();
+          },
+          async create(payload) {
+            const response = await fetch(API_BASE_URL + "/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+            return response.json();
+          },
+          async update(id, payload) {
+            const response = await fetch(`${API_BASE_URL}/${id}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+            return response.json();
+          },
+          async getById(id) {
+            const response = await fetch(`${API_BASE_URL}/${id}`);
+            return response.json();
+          },
+        };
+
+        const formatDecimal = (value, digits = 4) => {
+          if (value === null || value === undefined) return "-";
+          const num = Number(value);
+          if (Number.isNaN(num)) return String(value);
+          return num.toFixed(digits);
+        };
+
+        const formatPercent = (value) => {
+          if (value === null || value === undefined || value === "") {
+            return "-";
+          }
+          return `${Number(value).toFixed(2)}%`;
+        };
+
+        const toLocalInputValue = (isoString) => {
+          if (!isoString) return "";
+          const date = new Date(isoString);
+          if (Number.isNaN(date.getTime())) return "";
+          const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+          return local.toISOString().slice(0, 16);
+        };
+
+        const fromLocalInputValue = (value) => {
+          if (!value) return undefined;
+          const date = new Date(value);
+          if (Number.isNaN(date.getTime())) return undefined;
+          return date.toISOString();
+        };
+
+        const toggleModal = (show) => {
+          if (show) {
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+          } else {
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+          }
+        };
+
+        const resetForm = () => {
+          decisionForm.reset();
+          decisionIdInput.value = "";
+        };
+
+        const showToast = (message, type = "success") => {
+          toastMessage.textContent = message;
+          toast.classList.remove("bg-green-500", "bg-red-500");
+          toast.classList.add(type === "success" ? "bg-green-500" : "bg-red-500");
+          toast.style.opacity = "1";
+          toast.style.transform = "translateY(0)";
+          clearTimeout(showToast.timeoutId);
+          showToast.timeoutId = setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transform = "translateY(8px)";
+          }, 2500);
+        };
+
+        const renderDecisions = () => {
+          decisionsTableBody.innerHTML = "";
+          if (!decisions.length) {
+            emptyState.classList.remove("hidden");
+            return;
+          }
+          emptyState.classList.add("hidden");
+          decisions.forEach((decision) => {
+            const row = document.createElement("tr");
+            row.className =
+              "hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors";
+            row.innerHTML = `
+              <td class="py-3 px-4 font-semibold text-gray-900 dark:text-white">${decision.stock_name}</td>
+              <td class="py-3 px-4 text-gray-700 dark:text-gray-300">${formatDecimal(
+                decision.current_price
+              )}</td>
+              <td class="py-3 px-4 text-gray-700 dark:text-gray-300">${formatDecimal(
+                decision.buy_price
+              )}</td>
+              <td class="py-3 px-4 text-gray-700 dark:text-gray-300">${formatDecimal(
+                decision.amount
+              )}</td>
+              <td class="py-3 px-4 text-gray-700 dark:text-gray-300">${formatDecimal(
+                decision.money,
+                2
+              )}</td>
+              <td class="py-3 px-4 text-gray-700 dark:text-gray-300">${
+                decision.decided_at
+                  ? new Date(decision.decided_at).toLocaleString("zh-CN")
+                  : "-"
+              }</td>
+              <td class="py-3 px-4 text-gray-500 dark:text-gray-400">${
+                decision.reason ? decision.reason : "-"
+              }</td>
+              <td class="py-3 px-4 text-gray-500 dark:text-gray-400">${
+                decision.review ? decision.review : "-"
+              }</td>
+              <td class="py-3 px-4 text-center">
+                <button
+                  data-id="${decision.id}"
+                  class="edit-decision-btn text-blue-500 hover:text-blue-700 font-semibold"
+                >
+                  编辑
+                </button>
+              </td>
+            `;
+            decisionsTableBody.appendChild(row);
+          });
+        };
+
+        const collectFilters = () => {
+          const formData = new FormData(filterForm);
+          return {
+            stock_name: formData.get("stock_name") || undefined,
+            start_decided_at: fromLocalInputValue(
+              formData.get("start_decided_at")
+            ),
+            end_decided_at: fromLocalInputValue(formData.get("end_decided_at")),
+            order: formData.get("order") || undefined,
+          };
+        };
+
+        const loadDecisions = async () => {
+          const filters = collectFilters();
+          try {
+            refreshListBtn.disabled = true;
+            refreshListBtn.textContent = "加载中...";
+            const response = await api.list(filters);
+            if (response.status === "success") {
+              decisions = response.data || [];
+              renderDecisions();
+            } else {
+              throw new Error(response.message || "加载失败");
+            }
+          } catch (error) {
+            console.error("加载股票决策失败:", error);
+            showToast(error.message || "加载决策失败", "error");
+            decisions = [];
+            renderDecisions();
+          } finally {
+            refreshListBtn.disabled = false;
+            refreshListBtn.textContent = "刷新";
+          }
+        };
+
+        const populateForm = (decision) => {
+          decisionIdInput.value = decision?.id || "";
+          Object.entries(formFields).forEach(([key, field]) => {
+            if (!field) return;
+            if (key === "decided_at") {
+              field.value = toLocalInputValue(decision?.[key]);
+            } else {
+              field.value = decision?.[key] ?? "";
+            }
+          });
+        };
+
+        const openCreateModal = () => {
+          modalTitle.textContent = "新增股票决策";
+          populateForm(null);
+          toggleModal(true);
+        };
+
+        const openEditModal = async (id) => {
+          modalTitle.textContent = "更新股票决策";
+          populateForm(null);
+          toggleModal(true);
+          try {
+            const response = await api.getById(id);
+            if (response.status === "success") {
+              populateForm(response.data);
+            } else {
+              throw new Error(response.message || "无法获取记录详情");
+            }
+          } catch (error) {
+            console.error("获取股票决策失败:", error);
+            showToast(error.message || "加载记录失败", "error");
+            toggleModal(false);
+          }
+        };
+
+        const handleFormSubmit = async (event) => {
+          event.preventDefault();
+          if (isSaving) return;
+          isSaving = true;
+
+          const id = decisionIdInput.value.trim();
+          const payload = {};
+          Object.entries(formFields).forEach(([key, field]) => {
+            const value = field.value.trim();
+            if (value === "") return;
+            if (
+              [
+                "current_price",
+                "buy_price",
+                "amount",
+                "money",
+                "yesterday_change",
+                "last_month_change",
+              ].includes(key)
+            ) {
+              payload[key] = Number(value);
+            } else if (key === "decided_at") {
+              payload[key] = fromLocalInputValue(value);
+            } else {
+              payload[key] = value;
+            }
+          });
+
+          if (!payload.stock_name) {
+            showToast("股票名称为必填项", "error");
+            isSaving = false;
+            return;
+          }
+
+          try {
+            const response = id
+              ? await api.update(id, payload)
+              : await api.create(payload);
+            if (response.status === "success") {
+              showToast(id ? "更新成功" : "创建成功");
+              toggleModal(false);
+              await loadDecisions();
+            } else {
+              throw new Error(response.message || "请求失败");
+            }
+          } catch (error) {
+            console.error("保存股票决策失败:", error);
+            showToast(error.message || "保存失败", "error");
+          } finally {
+            isSaving = false;
+          }
+        };
+
+        decisionsTableBody.addEventListener("click", (event) => {
+          const target = event.target.closest(".edit-decision-btn");
+          if (!target) return;
+          const id = target.dataset.id;
+          if (id) {
+            openEditModal(id);
+          }
+        });
+
+        filterForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          loadDecisions();
+        });
+
+        resetFiltersBtn.addEventListener("click", () => {
+          filterForm.reset();
+          loadDecisions();
+        });
+
+        refreshListBtn.addEventListener("click", () => {
+          loadDecisions();
+        });
+
+        createDecisionBtn.addEventListener("click", () => {
+          openCreateModal();
+        });
+
+        closeModalBtn.addEventListener("click", () => {
+          toggleModal(false);
+        });
+
+        cancelModalBtn.addEventListener("click", () => {
+          toggleModal(false);
+        });
+
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) {
+            toggleModal(false);
+          }
+        });
+
+        decisionForm.addEventListener("submit", handleFormSubmit);
+
+        loadDecisions();
+      });
+    </script>
+  </body>
+</html>
