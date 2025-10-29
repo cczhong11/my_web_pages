@@ -418,7 +418,7 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const API_BASE_URL = "http://api.tczhong.com/stock-decision";
+        const API_BASE_URL = "https://api.tczhong.com/stock-decision";
 
         const decisionsTableBody = document.getElementById(
           "decisions-table-body"
@@ -510,7 +510,9 @@
           if (!isoString) return "";
           const date = new Date(isoString);
           if (Number.isNaN(date.getTime())) return "";
-          const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+          const local = new Date(
+            date.getTime() - date.getTimezoneOffset() * 60000
+          );
           return local.toISOString().slice(0, 16);
         };
 
@@ -539,7 +541,9 @@
         const showToast = (message, type = "success") => {
           toastMessage.textContent = message;
           toast.classList.remove("bg-green-500", "bg-red-500");
-          toast.classList.add(type === "success" ? "bg-green-500" : "bg-red-500");
+          toast.classList.add(
+            type === "success" ? "bg-green-500" : "bg-red-500"
+          );
           toast.style.opacity = "1";
           toast.style.transform = "translateY(0)";
           clearTimeout(showToast.timeoutId);
@@ -561,7 +565,9 @@
             row.className =
               "hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors";
             row.innerHTML = `
-              <td class="py-3 px-4 font-semibold text-gray-900 dark:text-white">${decision.stock_name}</td>
+              <td class="py-3 px-4 font-semibold text-gray-900 dark:text-white">${
+                decision.stock_name
+              }</td>
               <td class="py-3 px-4 text-gray-700 dark:text-gray-300">${formatDecimal(
                 decision.current_price
               )}</td>
