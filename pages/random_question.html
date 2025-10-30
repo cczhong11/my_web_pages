@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>随机提问卡片</title>
+    <link rel="icon" type="image/svg+xml" href="../icons/home.svg" />
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #dde9ff 0%, #f3f6ff 40%, #fff 100%);
+        color: #17223b;
+      }
+
+      .app {
+        width: min(92vw, 960px);
+        padding: 32px;
+        box-sizing: border-box;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+
+      header h1 {
+        margin: 0 0 12px;
+        font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      header p {
+        margin: 0;
+        color: rgba(23, 34, 59, 0.7);
+        font-size: 1rem;
+      }
+
+      .card {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 24px 60px rgba(23, 34, 59, 0.12);
+        padding: clamp(24px, 3vw, 36px);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 26px 70px rgba(23, 34, 59, 0.16);
+      }
+
+      .topic {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        border-bottom: 1px solid rgba(23, 34, 59, 0.08);
+        padding-bottom: 0.75rem;
+      }
+
+      .topic span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(93, 135, 255, 0.1);
+        color: #3a5adf;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .topic h2 {
+        margin: 0;
+        font-size: clamp(1.3rem, 2vw, 1.6rem);
+        font-weight: 600;
+        color: #17223b;
+      }
+
+      .question-cn {
+        font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+        line-height: 1.6;
+        font-weight: 600;
+        color: #1d2a44;
+      }
+
+      .question-en {
+        font-size: clamp(1rem, 1.8vw, 1.2rem);
+        color: rgba(23, 34, 59, 0.7);
+        line-height: 1.6;
+      }
+
+      .substitutions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 4px;
+      }
+
+      .substitutions strong {
+        font-size: 0.95rem;
+        color: rgba(23, 34, 59, 0.8);
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        background: rgba(23, 34, 59, 0.08);
+        color: #17223b;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: center;
+        margin-top: 28px;
+      }
+
+      button {
+        cursor: pointer;
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #5066ff, #6f9bff);
+        color: #ffffff;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 14px 32px;
+        box-shadow: 0 16px 30px rgba(80, 102, 255, 0.24);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 38px rgba(80, 102, 255, 0.3);
+      }
+
+      button:active {
+        transform: translateY(0);
+        box-shadow: 0 10px 18px rgba(80, 102, 255, 0.24);
+      }
+
+      .notice {
+        text-align: center;
+        color: rgba(23, 34, 59, 0.6);
+        font-size: 0.92rem;
+        margin-top: 18px;
+      }
+
+      .error {
+        text-align: center;
+        color: #d03752;
+        font-weight: 600;
+        margin-top: 20px;
+      }
+
+      @media (max-width: 600px) {
+        .app {
+          padding: 24px 18px;
+        }
+
+        .card {
+          border-radius: 16px;
+        }
+
+        .topic {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <h1>随机提问卡片</h1>
+        <p>从《问题合集》中抽取一个灵感，开启一场深入的对话。</p>
+      </header>
+
+      <main id="card" class="card" aria-live="polite">
+        <div class="topic">
+          <span>LOADING</span>
+          <h2>正在为你挑选一个新问题...</h2>
+        </div>
+        <div class="question-cn">请稍候，问题加载中。</div>
+        <div class="question-en"></div>
+        <div class="substitutions"></div>
+      </main>
+
+      <div class="actions">
+        <button type="button" id="refresh-btn">换一个问题</button>
+      </div>
+      <p class="notice">数据来源：pages/问题合集_完整版.csv</p>
+      <p id="error" class="error" hidden></p>
+    </div>
+
+    <script>
+      const csvPath = "question.csv";
+      const card = document.getElementById("card");
+      const refreshBtn = document.getElementById("refresh-btn");
+      const errorBox = document.getElementById("error");
+      let questions = [];
+
+      async function loadQuestions() {
+        try {
+          const response = await fetch(csvPath);
+          if (!response.ok) {
+            throw new Error(
+              `读取文件失败：${response.status} ${response.statusText}`
+            );
+          }
+          const rawText = await response.text();
+          const parsed = parseCSV(rawText);
+          const [header, ...rows] = parsed;
+
+          const mapped = rows
+            .map((row) => ({
+              topicCN: row[0]?.trim() ?? "",
+              topicEN: row[1]?.trim() ?? "",
+              questionCN: row[2]?.trim() ?? "",
+              questionEN: row[3]?.trim() ?? "",
+              substitutionsCN: row[4]?.trim() ?? "",
+              substitutionsEN: row[5]?.trim() ?? "",
+            }))
+            .filter((entry) => entry.questionCN || entry.questionEN);
+
+          if (!mapped.length) {
+            throw new Error("CSV 文件中未找到有效的问题数据。");
+          }
+
+          questions = mapped;
+          showRandomQuestion();
+        } catch (err) {
+          displayError(err.message);
+        }
+      }
+
+      function parseCSV(source) {
+        const text = source.replace(/^\uFEFF/, "");
+        const rows = [];
+        let current = [];
+        let value = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < text.length; i += 1) {
+          const char = text[i];
+          const nextChar = text[i + 1];
+
+          if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+              value += '"';
+              i += 1;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === "," && !inQuotes) {
+            current.push(value);
+            value = "";
+          } else if ((char === "\n" || char === "\r") && !inQuotes) {
+            if (char === "\r" && nextChar === "\n") {
+              i += 1;
+            }
+            current.push(value);
+            rows.push(current);
+            current = [];
+            value = "";
+          } else {
+            value += char;
+          }
+        }
+
+        if (value || current.length) {
+          current.push(value);
+          rows.push(current);
+        }
+
+        return rows.filter((row) =>
+          row.some((cell) => (cell || "").trim().length > 0)
+        );
+      }
+
+      function showRandomQuestion() {
+        if (!questions.length) {
+          displayError("当前没有可用的问题可以展示。");
+          return;
+        }
+
+        hideError();
+        const randomIndex = Math.floor(Math.random() * questions.length);
+        const data = questions[randomIndex];
+
+        renderCard(data);
+      }
+
+      function renderCard(data) {
+        const substitutionsCN = splitSubstitutions(data.substitutionsCN, "、");
+        const substitutionsEN = splitSubstitutions(data.substitutionsEN, ",");
+        const substitutionBlocks = [];
+
+        if (substitutionsCN.length) {
+          substitutionBlocks.push(
+            `<div>
+              <strong>联想词</strong>
+              <div class="chips">${substitutionsCN
+                .map((item) => `<span class="chip">${item}</span>`)
+                .join("")}</div>
+            </div>`
+          );
+        }
+
+        if (substitutionsEN.length) {
+          substitutionBlocks.push(
+            `<div>
+              <strong>Substitutions</strong>
+              <div class="chips">${substitutionsEN
+                .map((item) => `<span class="chip">${item}</span>`)
+                .join("")}</div>
+            </div>`
+          );
+        }
+
+        card.innerHTML = `
+          <div class="topic">
+            <span>${data.topicEN || "TOPIC"}</span>
+            <h2>${data.topicCN || "主题未提供"}</h2>
+          </div>
+          <div class="question-cn">${
+            data.questionCN || "（暂无中文问题）"
+          }</div>
+          <div class="question-en">${data.questionEN || ""}</div>
+          ${
+            substitutionBlocks.length
+              ? `<div class="substitutions">${substitutionBlocks.join(
+                  ""
+                )}</div>`
+              : ""
+          }
+        `;
+      }
+
+      function splitSubstitutions(raw, delimiter) {
+        if (!raw) return [];
+        return raw
+          .split(delimiter)
+          .map((item) => item.replace(/["']/g, "").trim())
+          .filter(Boolean);
+      }
+
+      function displayError(message) {
+        errorBox.textContent = message;
+        errorBox.hidden = false;
+        card.setAttribute("aria-busy", "false");
+      }
+
+      function hideError() {
+        errorBox.hidden = true;
+        errorBox.textContent = "";
+        card.removeAttribute("aria-busy");
+      }
+
+      refreshBtn.addEventListener("click", showRandomQuestion);
+      loadQuestions();
+    </script>
+  </body>
+</html>
