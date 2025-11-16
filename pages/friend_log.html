@@ -66,8 +66,9 @@
           好友关系与见面记录
         </h1>
         <p class="text-slate-600 leading-relaxed text-base sm:text-lg">
-          使用 <code class="px-2 py-1 bg-slate-100 rounded-md text-sm"
-            >http://api.tczhong.com/friend</code
+          使用
+          <code class="px-2 py-1 bg-slate-100 rounded-md text-sm"
+            >https://api.tczhong.com/friend</code
           >
           管理好友列表，追踪最近一次见面，记录备注，并随时同步到 Dashboard。
         </p>
@@ -75,7 +76,9 @@
 
       <main class="max-w-5xl mx-auto space-y-8">
         <section class="card p-6 sm:p-8 space-y-6">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div
+            class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+          >
             <div>
               <h2 class="text-2xl font-semibold text-slate-900">好友列表</h2>
               <p class="text-slate-500 text-sm">
@@ -90,8 +93,13 @@
             </button>
           </div>
 
-          <form id="filter-form" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+          <form
+            id="filter-form"
+            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          >
+            <label
+              class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+            >
               姓名（精确匹配）
               <input
                 type="text"
@@ -101,7 +109,9 @@
                 class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               />
             </label>
-            <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            <label
+              class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+            >
               排序字段
               <select
                 id="filter-order-by"
@@ -113,7 +123,9 @@
                 <option value="id">id</option>
               </select>
             </label>
-            <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            <label
+              class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+            >
               排序方向
               <select
                 id="filter-order"
@@ -143,7 +155,9 @@
 
           <div class="overflow-x-auto rounded-2xl border border-slate-100">
             <table class="min-w-full divide-y divide-slate-100 text-sm">
-              <thead class="bg-slate-50 text-slate-500 uppercase tracking-wide text-xs">
+              <thead
+                class="bg-slate-50 text-slate-500 uppercase tracking-wide text-xs"
+              >
                 <tr>
                   <th class="px-4 py-3 text-left font-semibold">姓名</th>
                   <th class="px-4 py-3 text-left font-semibold">关系</th>
@@ -152,7 +166,10 @@
                   <th class="px-4 py-3 text-left font-semibold">记录 ID</th>
                 </tr>
               </thead>
-              <tbody id="friend-list-body" class="divide-y divide-slate-100 bg-white">
+              <tbody
+                id="friend-list-body"
+                class="divide-y divide-slate-100 bg-white"
+              >
                 <tr id="friend-empty-state">
                   <td class="px-4 py-5 text-center text-slate-400" colspan="5">
                     暂无好友记录，请先创建。
@@ -164,16 +181,21 @@
         </section>
 
         <section class="card p-6 sm:p-8 space-y-6">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div
+            class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+          >
             <div>
               <h2 class="text-2xl font-semibold text-slate-900">创建好友</h2>
               <p class="text-slate-500 text-sm">
-                姓名为必填，其他字段可选；last_meet 支持 ISO 或 “2024-06-01 20:30:00+08” 格式。
+                姓名为必填，其他字段可选；last_meet 支持 ISO 或 “2024-06-01
+                20:30:00+08” 格式。
               </p>
             </div>
           </div>
           <form id="create-form" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            <label
+              class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+            >
               姓名 *
               <input
                 type="text"
@@ -183,7 +205,9 @@
                 placeholder="例如：Alice"
               />
             </label>
-            <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            <label
+              class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+            >
               关系类型
               <input
                 type="text"
@@ -192,7 +216,9 @@
                 placeholder="同事 / 同学 / 家人"
               />
             </label>
-            <label class="sm:col-span-2 flex flex-col text-sm font-medium text-slate-600 gap-1">
+            <label
+              class="sm:col-span-2 flex flex-col text-sm font-medium text-slate-600 gap-1"
+            >
               备注
               <textarea
                 id="create-notes"
@@ -201,7 +227,9 @@
                 placeholder="最近聊什么？下一次见面计划？"
               ></textarea>
             </label>
-            <label class="sm:col-span-2 flex flex-col text-sm font-medium text-slate-600 gap-1">
+            <label
+              class="sm:col-span-2 flex flex-col text-sm font-medium text-slate-600 gap-1"
+            >
               最近见面时间
               <input
                 type="datetime-local"
@@ -223,12 +251,16 @@
         <section class="card p-6 sm:p-8 space-y-6">
           <div class="grid gap-6 lg:grid-cols-2">
             <div class="space-y-4">
-              <h2 class="text-2xl font-semibold text-slate-900">更新好友记录</h2>
+              <h2 class="text-2xl font-semibold text-slate-900">
+                更新好友记录
+              </h2>
               <p class="text-slate-500 text-sm">
                 只填写需要变更的字段即可；notes 和 last_meet 均为可选。
               </p>
               <form id="update-form" class="space-y-4">
-                <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+                <label
+                  class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+                >
                   记录 ID *
                   <input
                     type="text"
@@ -238,7 +270,9 @@
                     placeholder="从列表复制"
                   />
                 </label>
-                <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+                <label
+                  class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+                >
                   备注
                   <textarea
                     id="update-notes"
@@ -247,7 +281,9 @@
                     placeholder="例如：“2024-06-01 晚餐复盘AI项目”"
                   ></textarea>
                 </label>
-                <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+                <label
+                  class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+                >
                   最近见面时间
                   <input
                     type="datetime-local"
@@ -265,10 +301,16 @@
             </div>
 
             <div class="space-y-4">
-              <h2 class="text-2xl font-semibold text-slate-900">查询单个好友</h2>
-              <p class="text-slate-500 text-sm">输入记录 ID，快速查看详细备注。</p>
+              <h2 class="text-2xl font-semibold text-slate-900">
+                查询单个好友
+              </h2>
+              <p class="text-slate-500 text-sm">
+                输入记录 ID，快速查看详细备注。
+              </p>
               <form id="detail-form" class="space-y-3">
-                <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+                <label
+                  class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+                >
                   记录 ID
                   <input
                     type="text"
@@ -287,7 +329,9 @@
                 id="friend-detail"
                 class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-sm text-slate-600"
               >
-                <p class="text-slate-400">提交 ID 后将在此展示 API 返回的数据。</p>
+                <p class="text-slate-400">
+                  提交 ID 后将在此展示 API 返回的数据。
+                </p>
               </div>
             </div>
           </div>
@@ -295,7 +339,9 @@
 
         <section class="card p-6 sm:p-8 space-y-3 text-sm text-slate-500">
           <div class="font-semibold text-slate-700">常用 cURL 调试参考</div>
-          <pre class="rounded-2xl bg-slate-900 text-slate-200 p-4 overflow-x-auto text-xs leading-relaxed"><code># 列出好友
+          <pre
+            class="rounded-2xl bg-slate-900 text-slate-200 p-4 overflow-x-auto text-xs leading-relaxed"
+          ><code># 列出好友
 curl -X GET "http://api.tczhong.com/friend?order=desc&order_by=last_meet"
 
 # 创建好友
@@ -314,7 +360,7 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
     </div>
 
     <script>
-      const FRIEND_API_BASE = "http://api.tczhong.com/friend";
+      const FRIEND_API_BASE = "https://api.tczhong.com/friend";
 
       const friendListBody = document.getElementById("friend-list-body");
       const friendEmptyState = document.getElementById("friend-empty-state");
@@ -370,12 +416,20 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
           tr.className = "hover:bg-slate-50 transition";
           tr.innerHTML = `
             <td class="px-4 py-4">
-              <div class="font-semibold text-slate-900">${friend.name ?? "—"}</div>
+              <div class="font-semibold text-slate-900">${
+                friend.name ?? "—"
+              }</div>
             </td>
-            <td class="px-4 py-4 text-slate-600">${friend.relationship ?? "—"}</td>
-            <td class="px-4 py-4 text-slate-600">${formatDate(friend.last_meet)}</td>
+            <td class="px-4 py-4 text-slate-600">${
+              friend.relationship ?? "—"
+            }</td>
+            <td class="px-4 py-4 text-slate-600">${formatDate(
+              friend.last_meet
+            )}</td>
             <td class="px-4 py-4 text-slate-500">${friend.notes ?? "—"}</td>
-            <td class="px-4 py-4 text-slate-400 text-xs">${friend.id ?? "—"}</td>
+            <td class="px-4 py-4 text-slate-400 text-xs">${
+              friend.id ?? "—"
+            }</td>
           `;
           friendListBody.appendChild(tr);
         });
@@ -428,10 +482,14 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
         event.preventDefault();
         const payload = {
           name: document.getElementById("create-name").value.trim(),
-          relationship: document.getElementById("create-relationship").value.trim(),
+          relationship: document
+            .getElementById("create-relationship")
+            .value.trim(),
           notes: document.getElementById("create-notes").value.trim(),
           last_meet: document.getElementById("create-last-meet").value
-            ? new Date(document.getElementById("create-last-meet").value).toISOString()
+            ? new Date(
+                document.getElementById("create-last-meet").value
+              ).toISOString()
             : "",
         };
         if (!payload.name) {
@@ -468,7 +526,8 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
         }
         const payload = {};
         if (notes) payload.notes = notes;
-        if (lastMeetValue) payload.last_meet = new Date(lastMeetValue).toISOString();
+        if (lastMeetValue)
+          payload.last_meet = new Date(lastMeetValue).toISOString();
         if (!Object.keys(payload).length) {
           showMessage("error", "请填写需要更新的字段");
           return;
@@ -501,16 +560,27 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
           const data = await handleResponse(response);
           detailPanel.innerHTML = `
             <div class="space-y-1">
-              <div><span class="font-semibold text-slate-700">姓名：</span>${data.name ?? "—"}</div>
-              <div><span class="font-semibold text-slate-700">关系：</span>${data.relationship ?? "—"}</div>
-              <div><span class="font-semibold text-slate-700">备注：</span>${data.notes ?? "—"}</div>
-              <div><span class="font-semibold text-slate-700">最近见面：</span>${formatDate(data.last_meet)}</div>
-              <div><span class="font-semibold text-slate-700">记录 ID：</span>${data.id ?? "—"}</div>
+              <div><span class="font-semibold text-slate-700">姓名：</span>${
+                data.name ?? "—"
+              }</div>
+              <div><span class="font-semibold text-slate-700">关系：</span>${
+                data.relationship ?? "—"
+              }</div>
+              <div><span class="font-semibold text-slate-700">备注：</span>${
+                data.notes ?? "—"
+              }</div>
+              <div><span class="font-semibold text-slate-700">最近见面：</span>${formatDate(
+                data.last_meet
+              )}</div>
+              <div><span class="font-semibold text-slate-700">记录 ID：</span>${
+                data.id ?? "—"
+              }</div>
             </div>
           `;
           showMessage("success", "已获取好友详情");
         } catch (error) {
-          detailPanel.innerHTML = '<p class="text-rose-500">查询失败，请检查 ID。</p>';
+          detailPanel.innerHTML =
+            '<p class="text-rose-500">查询失败，请检查 ID。</p>';
           showMessage("error", error.message);
         }
       });
