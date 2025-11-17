@@ -162,6 +162,7 @@
               <th class="px-4 py-3 text-left font-semibold">姓名</th>
               <th class="px-4 py-3 text-left font-semibold">关系</th>
               <th class="px-4 py-3 text-left font-semibold">最近见面</th>
+              <th class="px-4 py-3 text-left font-semibold">距离今天</th>
               <th class="px-4 py-3 text-left font-semibold">备注</th>
               <th class="px-4 py-3 text-left font-semibold">记录 ID</th>
               <th class="px-4 py-3 text-left font-semibold">操作</th>
@@ -172,7 +173,7 @@
                 class="divide-y divide-slate-100 bg-white"
               >
                 <tr id="friend-empty-state">
-                  <td class="px-4 py-5 text-center text-slate-400" colspan="6">
+                  <td class="px-4 py-5 text-center text-slate-400" colspan="7">
                     暂无好友记录，请先创建。
                   </td>
                 </tr>
@@ -440,6 +441,25 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
         });
       }
 
+      function formatDaysSince(value) {
+        if (!value) return "—";
+        const lastMeet = new Date(value);
+        if (Number.isNaN(lastMeet.getTime())) return "—";
+        const now = new Date();
+        const diffMs = now - lastMeet;
+        const dayMs = 24 * 60 * 60 * 1000;
+        if (diffMs < 0) {
+          const daysAhead = Math.ceil(Math.abs(diffMs) / dayMs);
+          return `${daysAhead} 天后`;
+        }
+        const daysAgo = Math.floor(diffMs / dayMs);
+        if (daysAgo === 0) {
+          const hoursAgo = Math.floor(diffMs / (60 * 60 * 1000));
+          return hoursAgo <= 0 ? "今天" : `${hoursAgo} 小时`;
+        }
+        return `${daysAgo} 天`;
+      }
+
       function toDatetimeLocal(value) {
         if (!value) return "";
         const date = new Date(value);
@@ -470,6 +490,9 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
               friend.relationship ?? "—"
             }</td>
             <td class="px-4 py-4 text-slate-600">${formatDate(
+              friend.last_meet
+            )}</td>
+            <td class="px-4 py-4 text-slate-600">${formatDaysSince(
               friend.last_meet
             )}</td>
             <td class="px-4 py-4 text-slate-500">${friend.notes ?? "—"}</td>
