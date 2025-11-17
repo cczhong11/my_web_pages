@@ -159,11 +159,12 @@
                 class="bg-slate-50 text-slate-500 uppercase tracking-wide text-xs"
               >
                 <tr>
-                  <th class="px-4 py-3 text-left font-semibold">姓名</th>
-                  <th class="px-4 py-3 text-left font-semibold">关系</th>
-                  <th class="px-4 py-3 text-left font-semibold">最近见面</th>
-                  <th class="px-4 py-3 text-left font-semibold">备注</th>
-                  <th class="px-4 py-3 text-left font-semibold">记录 ID</th>
+              <th class="px-4 py-3 text-left font-semibold">姓名</th>
+              <th class="px-4 py-3 text-left font-semibold">关系</th>
+              <th class="px-4 py-3 text-left font-semibold">最近见面</th>
+              <th class="px-4 py-3 text-left font-semibold">备注</th>
+              <th class="px-4 py-3 text-left font-semibold">记录 ID</th>
+              <th class="px-4 py-3 text-left font-semibold">操作</th>
                 </tr>
               </thead>
               <tbody
@@ -171,7 +172,7 @@
                 class="divide-y divide-slate-100 bg-white"
               >
                 <tr id="friend-empty-state">
-                  <td class="px-4 py-5 text-center text-slate-400" colspan="5">
+                  <td class="px-4 py-5 text-center text-slate-400" colspan="6">
                     暂无好友记录，请先创建。
                   </td>
                 </tr>
@@ -249,90 +250,38 @@
         </section>
 
         <section class="card p-6 sm:p-8 space-y-6">
-          <div class="grid gap-6 lg:grid-cols-2">
-            <div class="space-y-4">
-              <h2 class="text-2xl font-semibold text-slate-900">
-                更新好友记录
-              </h2>
-              <p class="text-slate-500 text-sm">
-                只填写需要变更的字段即可；notes 和 last_meet 均为可选。
-              </p>
-              <form id="update-form" class="space-y-4">
-                <label
-                  class="flex flex-col text-sm font-medium text-slate-600 gap-1"
-                >
-                  记录 ID *
-                  <input
-                    type="text"
-                    id="update-id"
-                    required
-                    class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                    placeholder="从列表复制"
-                  />
-                </label>
-                <label
-                  class="flex flex-col text-sm font-medium text-slate-600 gap-1"
-                >
-                  备注
-                  <textarea
-                    id="update-notes"
-                    rows="3"
-                    class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                    placeholder="例如：“2024-06-01 晚餐复盘AI项目”"
-                  ></textarea>
-                </label>
-                <label
-                  class="flex flex-col text-sm font-medium text-slate-600 gap-1"
-                >
-                  最近见面时间
-                  <input
-                    type="datetime-local"
-                    id="update-last-meet"
-                    class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-white font-semibold shadow-lg shadow-blue-500/30 transition hover:bg-blue-500"
-                >
-                  更新记录
-                </button>
-              </form>
-            </div>
-
-            <div class="space-y-4">
-              <h2 class="text-2xl font-semibold text-slate-900">
-                查询单个好友
-              </h2>
-              <p class="text-slate-500 text-sm">
-                输入记录 ID，快速查看详细备注。
-              </p>
-              <form id="detail-form" class="space-y-3">
-                <label
-                  class="flex flex-col text-sm font-medium text-slate-600 gap-1"
-                >
-                  记录 ID
-                  <input
-                    type="text"
-                    id="detail-id"
-                    class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  class="inline-flex w-full items-center justify-center rounded-2xl border border-indigo-200 bg-white px-5 py-3 text-indigo-700 font-semibold shadow-sm transition hover:bg-indigo-50"
-                >
-                  获取详情
-                </button>
-              </form>
-              <div
-                id="friend-detail"
-                class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-sm text-slate-600"
+          <div class="space-y-4">
+            <h2 class="text-2xl font-semibold text-slate-900">
+              查询单个好友
+            </h2>
+            <p class="text-slate-500 text-sm">
+              输入记录 ID，快速查看详细备注。
+            </p>
+            <form id="detail-form" class="space-y-3">
+              <label
+                class="flex flex-col text-sm font-medium text-slate-600 gap-1"
               >
-                <p class="text-slate-400">
-                  提交 ID 后将在此展示 API 返回的数据。
-                </p>
-              </div>
+                记录 ID
+                <input
+                  type="text"
+                  id="detail-id"
+                  class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                />
+              </label>
+              <button
+                type="submit"
+                class="inline-flex w-full items-center justify-center rounded-2xl border border-indigo-200 bg-white px-5 py-3 text-indigo-700 font-semibold shadow-sm transition hover:bg-indigo-50"
+              >
+                获取详情
+              </button>
+            </form>
+            <div
+              id="friend-detail"
+              class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-sm text-slate-600"
+            >
+              <p class="text-slate-400">
+                提交 ID 后将在此展示 API 返回的数据。
+              </p>
             </div>
           </div>
         </section>
@@ -359,6 +308,83 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
       <div id="message-box" class="message mt-8 max-w-3xl mx-auto"></div>
     </div>
 
+    <div
+      id="edit-modal"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4 py-8"
+    >
+      <div
+        class="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+      >
+        <button
+          id="edit-modal-close"
+          class="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-700"
+          aria-label="关闭编辑弹窗"
+        >
+          ✕
+        </button>
+        <div class="mb-4 space-y-1">
+          <p class="text-xs uppercase tracking-wide text-slate-400">编辑好友</p>
+          <h3
+            class="text-xl font-semibold text-slate-900"
+            id="edit-name-display"
+          >
+            —
+          </h3>
+        </div>
+        <form id="edit-form" class="space-y-4">
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+          >
+            关系
+            <input
+              type="text"
+              id="edit-relationship"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="同事 / 同学 / 家人"
+            />
+          </label>
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+          >
+            备注
+            <textarea
+              id="edit-notes"
+              rows="3"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="记录见面内容或提醒"
+            ></textarea>
+          </label>
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1"
+          >
+            最近见面时间
+            <input
+              type="datetime-local"
+              id="edit-last-meet"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <div class="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              id="edit-cancel-btn"
+              class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-500"
+            >
+              保存修改
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <script>
       const FRIEND_API_BASE = "https://api.tczhong.com/friend";
 
@@ -369,9 +395,20 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
       const resetFilterBtn = document.getElementById("reset-filter-btn");
       const refreshBtn = document.getElementById("refresh-list-btn");
       const createForm = document.getElementById("create-form");
-      const updateForm = document.getElementById("update-form");
       const detailForm = document.getElementById("detail-form");
       const messageBox = document.getElementById("message-box");
+      const editModal = document.getElementById("edit-modal");
+      const editModalClose = document.getElementById("edit-modal-close");
+      const editCancelBtn = document.getElementById("edit-cancel-btn");
+      const editForm = document.getElementById("edit-form");
+      const editNotesInput = document.getElementById("edit-notes");
+      const editLastMeetInput = document.getElementById("edit-last-meet");
+      const editRelationshipInput = document.getElementById(
+        "edit-relationship"
+      );
+      const editNameDisplay = document.getElementById("edit-name-display");
+      let latestFriends = [];
+      let editingFriendId = null;
 
       function showMessage(type, text) {
         messageBox.textContent = text;
@@ -403,7 +440,16 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
         });
       }
 
+      function toDatetimeLocal(value) {
+        if (!value) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        const offsetMs = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+      }
+
       function renderFriends(friends = []) {
+        latestFriends = friends;
         friendEmptyState.classList.add("hidden");
         friendListBody.innerHTML = "";
         if (!friends.length) {
@@ -430,6 +476,19 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
             <td class="px-4 py-4 text-slate-400 text-xs">${
               friend.id ?? "—"
             }</td>
+            <td class="px-4 py-4">
+              <button
+                type="button"
+                class="inline-flex items-center rounded-full border px-4 py-1 text-xs font-semibold transition ${
+                  friend.id
+                    ? "border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                    : "border-slate-200 text-slate-400 cursor-not-allowed opacity-60"
+                }"
+                ${friend.id ? `data-edit-id="${friend.id}"` : "disabled"}
+              >
+                编辑
+              </button>
+            </td>
           `;
           friendListBody.appendChild(tr);
         });
@@ -478,6 +537,87 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
         });
       });
 
+      function openEditModal(friend) {
+        editingFriendId = friend.id;
+        editNameDisplay.textContent = friend.name ?? "—";
+        editRelationshipInput.value = friend.relationship ?? "";
+        editNotesInput.value = friend.notes ?? "";
+        editLastMeetInput.value = toDatetimeLocal(friend.last_meet);
+        editModal.classList.remove("hidden");
+        editModal.classList.add("flex");
+        document.body.classList.add("overflow-hidden");
+      }
+
+      function closeEditModal() {
+        editModal.classList.add("hidden");
+        editModal.classList.remove("flex");
+        document.body.classList.remove("overflow-hidden");
+        editForm.reset();
+        editingFriendId = null;
+      }
+
+      friendListBody.addEventListener("click", (event) => {
+        const editButton = event.target.closest("button[data-edit-id]");
+        if (!editButton) return;
+        const friendId = editButton.getAttribute("data-edit-id");
+        const friend = latestFriends.find(
+          (item) => String(item.id) === String(friendId)
+        );
+        if (!friend) {
+          showMessage("error", "未找到好友信息，稍后再试");
+          return;
+        }
+        openEditModal(friend);
+      });
+
+      editModal.addEventListener("click", (event) => {
+        if (event.target === editModal) {
+          closeEditModal();
+        }
+      });
+
+      editModalClose.addEventListener("click", closeEditModal);
+      editCancelBtn.addEventListener("click", closeEditModal);
+
+      editForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!editingFriendId) {
+          showMessage("error", "缺少记录 ID");
+          return;
+        }
+        const relationship = editRelationshipInput.value.trim();
+        const notes = editNotesInput.value.trim();
+        const lastMeetValue = editLastMeetInput.value;
+        const payload = {};
+
+        if (relationship) payload.relationship = relationship;
+        if (notes) payload.notes = notes;
+        if (lastMeetValue)
+          payload.last_meet = new Date(lastMeetValue).toISOString();
+
+        if (!Object.keys(payload).length) {
+          showMessage("error", "请修改至少一个字段");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `${FRIEND_API_BASE}/${editingFriendId}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            }
+          );
+          const data = await handleResponse(response);
+          closeEditModal();
+          showMessage("success", `记录已更新：${data.name}`);
+          loadFriends();
+        } catch (error) {
+          showMessage("error", error.message);
+        }
+      });
+
       createForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         const payload = {
@@ -508,39 +648,6 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
           const data = await handleResponse(response);
           createForm.reset();
           showMessage("success", `已创建好友：${data.name}`);
-          loadFriends();
-        } catch (error) {
-          showMessage("error", error.message);
-        }
-      });
-
-      updateForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const id = document.getElementById("update-id").value.trim();
-        const notes = document.getElementById("update-notes").value.trim();
-        const lastMeetValue = document.getElementById("update-last-meet").value;
-
-        if (!id) {
-          showMessage("error", "请提供记录 ID");
-          return;
-        }
-        const payload = {};
-        if (notes) payload.notes = notes;
-        if (lastMeetValue)
-          payload.last_meet = new Date(lastMeetValue).toISOString();
-        if (!Object.keys(payload).length) {
-          showMessage("error", "请填写需要更新的字段");
-          return;
-        }
-
-        try {
-          const response = await fetch(`${FRIEND_API_BASE}/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          const data = await handleResponse(response);
-          showMessage("success", `记录已更新：${data.name}`);
           loadFriends();
         } catch (error) {
           showMessage("error", error.message);
