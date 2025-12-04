@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>预测事件记录</title>
+    <link rel="icon" type="image/svg+xml" href="../icons/home.svg" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../auth.js" defer></script>
+    <style>
+      body {
+        font-family: "Inter", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        background: radial-gradient(circle at 10% 20%, #eef2ff, #f8fafc 35%),
+          linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+        color: #0f172a;
+      }
+      .card {
+        background: #ffffff;
+        border-radius: 1.25rem;
+        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 36px 70px rgba(15, 23, 42, 0.16);
+      }
+      .message {
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        font-weight: 500;
+        display: none;
+      }
+      .message.show {
+        display: block;
+      }
+      .message.success {
+        background: rgba(16, 185, 129, 0.15);
+        color: #047857;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+      }
+      .message.error {
+        background: rgba(248, 113, 113, 0.15);
+        color: #b91c1c;
+        border: 1px solid rgba(248, 113, 113, 0.25);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen px-4 py-10 sm:px-8">
+    <header class="max-w-5xl mx-auto text-center mb-10 space-y-3">
+      <p
+        class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-700 uppercase tracking-wide"
+      >
+        预测事件 API 模式
+      </p>
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">
+        记录与复盘未来事件的概率
+      </h1>
+      <p
+        class="text-slate-600 leading-relaxed text-base sm:text-lg max-w-3xl mx-auto"
+      >
+        使用
+        <code class="px-2 py-1 bg-slate-100 rounded-md text-sm"
+          >http://api.tczhong.com/prediction_event</code
+        >
+        新增预测、更新概率，按事件名过滤列表，并在复盘后记录结果。
+      </p>
+    </header>
+
+    <main class="max-w-6xl mx-auto space-y-8">
+      <section class="card p-6 sm:p-8 space-y-6">
+        <div
+          class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            <h2 class="text-2xl font-semibold text-slate-900">预测事件列表</h2>
+            <p class="text-slate-500 text-sm">
+              按名称精确过滤，默认按创建时间倒序展示。
+            </p>
+          </div>
+          <button
+            id="refresh-btn"
+            class="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-white text-sm font-semibold shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5"
+          >
+            立即刷新
+          </button>
+        </div>
+
+        <form id="filter-form" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            事件名称（精确匹配）
+            <input
+              type="text"
+              name="event_name"
+              placeholder="例如：US CPI 2024-09"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            排序方向
+            <select
+              name="order"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            >
+              <option value="desc">desc（最新在前）</option>
+              <option value="asc">asc（最早在前）</option>
+            </select>
+          </label>
+          <div class="flex items-end gap-3">
+            <button
+              type="submit"
+              class="w-full rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold shadow-md shadow-indigo-500/20 transition hover:bg-indigo-500"
+            >
+              应用筛选
+            </button>
+            <button
+              type="button"
+              id="reset-filter-btn"
+              class="hidden sm:inline-flex shrink-0 items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+            >
+              重置
+            </button>
+          </div>
+        </form>
+
+        <div class="overflow-x-auto rounded-2xl border border-slate-100">
+          <table class="min-w-full divide-y divide-slate-100 text-sm">
+            <thead
+              class="bg-slate-50 text-slate-500 uppercase tracking-wide text-xs"
+            >
+              <tr>
+                <th class="px-4 py-3 text-left font-semibold">事件</th>
+                <th class="px-4 py-3 text-left font-semibold">概率</th>
+                <th class="px-4 py-3 text-left font-semibold">复盘日期</th>
+                <th class="px-4 py-3 text-left font-semibold">创建时间</th>
+                <th class="px-4 py-3 text-left font-semibold">记录 ID</th>
+                <th class="px-4 py-3 text-left font-semibold">操作</th>
+              </tr>
+            </thead>
+            <tbody
+              id="event-list-body"
+              class="divide-y divide-slate-100 bg-white"
+            >
+              <tr id="event-empty-state">
+                <td class="px-4 py-5 text-center text-slate-400" colspan="6">
+                  暂无记录，请先创建预测事件。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card p-6 sm:p-8 space-y-6">
+        <div>
+          <h2 class="text-2xl font-semibold text-slate-900">创建预测事件</h2>
+          <p class="text-slate-500 text-sm">
+            event_name 必填；revisitied_time 支持 YYYY-MM-DD 或 ISO 字符串。
+          </p>
+        </div>
+        <form id="create-form" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1 sm:col-span-2"
+          >
+            事件名称 *
+            <input
+              type="text"
+              id="create-name"
+              required
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="US CPI 2024-09"
+            />
+          </label>
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            事件概率（可选）
+            <input
+              type="text"
+              id="create-probability"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="65% / 60-70%"
+            />
+          </label>
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            复盘日期（可选）
+            <input
+              type="date"
+              id="create-revisit"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1 sm:col-span-2"
+          >
+            概率判断理由（可选）
+            <textarea
+              id="create-reason"
+              rows="3"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="例如：能源价格下滑、就业放缓"
+            ></textarea>
+          </label>
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1 sm:col-span-2"
+          >
+            备注（可选）
+            <textarea
+              id="create-note"
+              rows="3"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="附加说明或关注点"
+            ></textarea>
+          </label>
+          <div class="sm:col-span-2">
+            <button
+              type="submit"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3 text-white font-semibold shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-400"
+            >
+              创建预测事件
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card p-6 sm:p-8 space-y-4">
+        <div>
+          <h2 class="text-2xl font-semibold text-slate-900">查询单条记录</h2>
+          <p class="text-slate-500 text-sm">
+            输入 ID 查看完整详情、概率与复盘记录。
+          </p>
+        </div>
+        <form id="detail-form" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1 sm:col-span-2"
+          >
+            记录 ID
+            <input
+              type="text"
+              id="detail-id"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="例如：12"
+            />
+          </label>
+          <button
+            type="submit"
+            class="w-full rounded-xl border border-indigo-200 bg-white px-5 py-3 text-indigo-700 font-semibold shadow-sm transition hover:bg-indigo-50"
+          >
+            获取详情
+          </button>
+        </form>
+        <div
+          id="detail-panel"
+          class="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-sm text-slate-600 space-y-1"
+        >
+          <p class="text-slate-400">提交 ID 后将在此展示 API 返回的数据。</p>
+        </div>
+      </section>
+
+      <section class="card p-6 sm:p-8 space-y-3 text-sm text-slate-500">
+        <div class="font-semibold text-slate-700">常用 cURL 调试参考</div>
+        <pre
+          class="rounded-2xl bg-slate-900 text-slate-200 p-4 overflow-x-auto text-xs leading-relaxed"
+        ><code># 列出预测事件
+curl -X GET "http://api.tczhong.com/prediction_event?order=desc"
+
+# 创建预测事件
+curl -X POST "http://api.tczhong.com/prediction_event/" \
+  -H "Content-Type: application/json" \
+  -d '{"event_name":"US CPI 2024-09","event_probability":"65%","reason":"Energy price decline","revisitied_time":"2024-09-15"}'
+
+# 更新预测事件
+curl -X PUT "http://api.tczhong.com/prediction_event/{id}" \
+  -H "Content-Type: application/json" \
+  -d '{"event_probability":"70%","result":"CPI came in lower; forecast correct"}'
+
+# 查询单条
+curl -X GET "http://api.tczhong.com/prediction_event/{id}"</code></pre>
+      </section>
+    </main>
+
+    <div id="message-box" class="message mt-8 max-w-3xl mx-auto"></div>
+
+    <div
+      id="edit-modal"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 px-4 py-8"
+    >
+      <div
+        class="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+      >
+        <button
+          id="edit-modal-close"
+          class="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-700"
+          aria-label="关闭编辑弹窗"
+        >
+          ✕
+        </button>
+        <div class="mb-4 space-y-1">
+          <p class="text-xs uppercase tracking-wide text-slate-400">
+            更新预测事件
+          </p>
+          <h3
+            class="text-xl font-semibold text-slate-900"
+            id="edit-event-title"
+          >
+            —
+          </h3>
+        </div>
+        <form id="edit-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            概率
+            <input
+              type="text"
+              id="edit-probability"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="如 70%"
+            />
+          </label>
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            复盘日期
+            <input
+              type="date"
+              id="edit-revisit"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1 sm:col-span-2"
+          >
+            理由
+            <textarea
+              id="edit-reason"
+              rows="3"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="更新你的推断逻辑"
+            ></textarea>
+          </label>
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1 sm:col-span-2"
+          >
+            备注
+            <textarea
+              id="edit-note"
+              rows="2"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="提醒或其他附加信息"
+            ></textarea>
+          </label>
+          <label
+            class="flex flex-col text-sm font-medium text-slate-600 gap-1 sm:col-span-2"
+          >
+            结果 / 复盘
+            <textarea
+              id="edit-result"
+              rows="3"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              placeholder="事件发生后的复盘记录"
+            ></textarea>
+          </label>
+          <div class="sm:col-span-2 flex justify-end gap-3 pt-1">
+            <button
+              type="button"
+              id="edit-cancel-btn"
+              class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 hover:bg-indigo-500"
+            >
+              保存修改
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "https://api.tczhong.com/prediction_event";
+
+      const listBody = document.getElementById("event-list-body");
+      const emptyRow = document.getElementById("event-empty-state");
+      const filterForm = document.getElementById("filter-form");
+      const resetFilterBtn = document.getElementById("reset-filter-btn");
+      const refreshBtn = document.getElementById("refresh-btn");
+      const createForm = document.getElementById("create-form");
+      const detailForm = document.getElementById("detail-form");
+      const detailPanel = document.getElementById("detail-panel");
+      const messageBox = document.getElementById("message-box");
+      const editModal = document.getElementById("edit-modal");
+      const editModalClose = document.getElementById("edit-modal-close");
+      const editCancelBtn = document.getElementById("edit-cancel-btn");
+      const editForm = document.getElementById("edit-form");
+      const editTitle = document.getElementById("edit-event-title");
+      const editProbabilityInput = document.getElementById("edit-probability");
+      const editRevisitInput = document.getElementById("edit-revisit");
+      const editReasonInput = document.getElementById("edit-reason");
+      const editNoteInput = document.getElementById("edit-note");
+      const editResultInput = document.getElementById("edit-result");
+      let latestEvents = [];
+      let editingId = null;
+
+      function showMessage(type, text) {
+        messageBox.textContent = text;
+        messageBox.className = `message ${type} show`;
+        clearTimeout(showMessage.timeout);
+        showMessage.timeout = setTimeout(() => {
+          messageBox.classList.remove("show");
+        }, 4000);
+      }
+
+      async function handleResponse(response) {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.status === "error") {
+          throw new Error(data.message || "API 请求失败");
+        }
+        return data.data ?? data;
+      }
+
+      function formatDate(value) {
+        if (!value) return "—";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+        return date.toLocaleString("zh-CN", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function toDateInputValue(value) {
+        if (!value) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value.slice(0, 10);
+        const offsetMs = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - offsetMs).toISOString().slice(0, 10);
+      }
+
+      function renderList(events = []) {
+        latestEvents = events;
+        listBody.innerHTML = "";
+        emptyRow.classList.add("hidden");
+        if (!events.length) {
+          listBody.appendChild(emptyRow);
+          emptyRow.classList.remove("hidden");
+          return;
+        }
+        events.forEach((item) => {
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50 transition";
+          tr.innerHTML = `
+            <td class="px-4 py-4">
+              <div class="font-semibold text-slate-900">${
+                item.event_name ?? "—"
+              }</div>
+            </td>
+            <td class="px-4 py-4 text-slate-600">${
+              item.event_probability ?? "—"
+            }</td>
+            <td class="px-4 py-4 text-slate-600">${toDateInputValue(
+              item.revisitied_time ?? item.revisit_time
+            ) || "—"}</td>
+            <td class="px-4 py-4 text-slate-600">${formatDate(
+              item.created_at
+            )}</td>
+            <td class="px-4 py-4 text-slate-400 text-xs">${item.id ?? "—"}</td>
+            <td class="px-4 py-4">
+              <button
+                type="button"
+                class="inline-flex items-center rounded-full border px-4 py-1 text-xs font-semibold transition ${
+                  item.id
+                    ? "border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                    : "border-slate-200 text-slate-400 cursor-not-allowed opacity-60"
+                }"
+                ${item.id ? `data-edit-id="${item.id}"` : "disabled"}
+              >
+                编辑
+              </button>
+            </td>
+          `;
+          listBody.appendChild(tr);
+        });
+      }
+
+      async function loadList(search = {}) {
+        const params = new URLSearchParams();
+        Object.entries(search).forEach(([key, value]) => {
+          if (value) params.append(key, value);
+        });
+        const url = params.toString()
+          ? `${API_BASE}/?${params.toString()}`
+          : `${API_BASE}/`;
+        try {
+          const response = await fetch(url);
+          const data = await handleResponse(response);
+          renderList(data || []);
+        } catch (error) {
+          renderList([]);
+          showMessage("error", error.message);
+        }
+      }
+
+      filterForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(filterForm);
+        const search = {
+          event_name: formData.get("event_name")?.trim(),
+          order: formData.get("order"),
+        };
+        loadList(search);
+      });
+
+      resetFilterBtn.addEventListener("click", () => {
+        filterForm.reset();
+        loadList();
+      });
+
+      refreshBtn.addEventListener("click", () => {
+        const formData = new FormData(filterForm);
+        loadList({
+          event_name: formData.get("event_name")?.trim(),
+          order: formData.get("order"),
+        });
+      });
+
+      listBody.addEventListener("click", (event) => {
+        const editButton = event.target.closest("button[data-edit-id]");
+        if (!editButton) return;
+        const id = editButton.getAttribute("data-edit-id");
+        openEditModal(id);
+      });
+
+      async function openEditModal(id) {
+        if (!id) return;
+        try {
+          const response = await fetch(`${API_BASE}/${id}`);
+          const data = await handleResponse(response);
+          editingId = id;
+          editTitle.textContent = data.event_name ?? `ID ${id}`;
+          editProbabilityInput.value = data.event_probability ?? "";
+          editReasonInput.value = data.reason ?? "";
+          editNoteInput.value = data.note ?? "";
+          editResultInput.value = data.result ?? "";
+          editRevisitInput.value = toDateInputValue(
+            data.revisitied_time ?? data.revisit_time
+          );
+          editModal.classList.remove("hidden");
+          editModal.classList.add("flex");
+          document.body.classList.add("overflow-hidden");
+        } catch (error) {
+          showMessage("error", error.message);
+        }
+      }
+
+      function closeEditModal() {
+        editModal.classList.add("hidden");
+        editModal.classList.remove("flex");
+        document.body.classList.remove("overflow-hidden");
+        editForm.reset();
+        editingId = null;
+      }
+
+      editModal.addEventListener("click", (event) => {
+        if (event.target === editModal) closeEditModal();
+      });
+      editModalClose.addEventListener("click", closeEditModal);
+      editCancelBtn.addEventListener("click", closeEditModal);
+
+      editForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!editingId) {
+          showMessage("error", "缺少记录 ID");
+          return;
+        }
+        const payload = {};
+        if (editProbabilityInput.value.trim())
+          payload.event_probability = editProbabilityInput.value.trim();
+        if (editReasonInput.value.trim())
+          payload.reason = editReasonInput.value.trim();
+        if (editNoteInput.value.trim())
+          payload.note = editNoteInput.value.trim();
+        if (editResultInput.value.trim())
+          payload.result = editResultInput.value.trim();
+        if (editRevisitInput.value)
+          payload.revisitied_time = editRevisitInput.value;
+
+        if (!Object.keys(payload).length) {
+          showMessage("error", "请修改至少一个字段");
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/${editingId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          await handleResponse(response);
+          closeEditModal();
+          showMessage("success", "记录已更新");
+          loadList();
+        } catch (error) {
+          showMessage("error", error.message);
+        }
+      });
+
+      createForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = {
+          event_name: document.getElementById("create-name").value.trim(),
+          event_probability: document
+            .getElementById("create-probability")
+            .value.trim(),
+          note: document.getElementById("create-note").value.trim(),
+          reason: document.getElementById("create-reason").value.trim(),
+          revisitied_time: document.getElementById("create-revisit").value,
+        };
+
+        if (!payload.event_name) {
+          showMessage("error", "请填写事件名称");
+          return;
+        }
+        Object.keys(payload).forEach((key) => {
+          if (!payload[key]) delete payload[key];
+        });
+
+        try {
+          const response = await fetch(`${API_BASE}/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await handleResponse(response);
+          createForm.reset();
+          showMessage("success", `已创建：${data.event_name}`);
+          loadList();
+        } catch (error) {
+          showMessage("error", error.message);
+        }
+      });
+
+      detailForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const id = document.getElementById("detail-id").value.trim();
+        if (!id) {
+          showMessage("error", "请输入需要查询的记录 ID");
+          return;
+        }
+        detailPanel.innerHTML = '<p class="text-slate-400">查询中…</p>';
+        try {
+          const response = await fetch(`${API_BASE}/${id}`);
+          const data = await handleResponse(response);
+          detailPanel.innerHTML = `
+            <div class="space-y-1">
+              <div><span class="font-semibold text-slate-700">事件：</span>${
+                data.event_name ?? "—"
+              }</div>
+              <div><span class="font-semibold text-slate-700">概率：</span>${
+                data.event_probability ?? "—"
+              }</div>
+              <div><span class="font-semibold text-slate-700">理由：</span>${
+                data.reason ?? "—"
+              }</div>
+              <div><span class="font-semibold text-slate-700">备注：</span>${
+                data.note ?? "—"
+              }</div>
+              <div><span class="font-semibold text-slate-700">结果：</span>${
+                data.result ?? "—"
+              }</div>
+              <div><span class="font-semibold text-slate-700">复盘日期：</span>${
+                data.revisitied_time ?? "—"
+              }</div>
+              <div><span class="font-semibold text-slate-700">创建时间：</span>${formatDate(
+                data.created_at
+              )}</div>
+              <div><span class="font-semibold text-slate-700">记录 ID：</span>${
+                data.id ?? "—"
+              }</div>
+            </div>
+          `;
+          showMessage("success", "已获取记录详情");
+        } catch (error) {
+          detailPanel.innerHTML =
+            '<p class="text-rose-500">查询失败，请检查 ID。</p>';
+          showMessage("error", error.message);
+        }
+      });
+
+      loadList();
+    </script>
+  </body>
+</html>

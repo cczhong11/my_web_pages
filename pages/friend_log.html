@@ -160,13 +160,13 @@
                 class="bg-slate-50 text-slate-500 uppercase tracking-wide text-xs"
               >
                 <tr>
-              <th class="px-4 py-3 text-left font-semibold">姓名</th>
-              <th class="px-4 py-3 text-left font-semibold">关系</th>
-              <th class="px-4 py-3 text-left font-semibold">最近见面</th>
-              <th class="px-4 py-3 text-left font-semibold">距离今天</th>
-              <th class="px-4 py-3 text-left font-semibold">备注</th>
-              <th class="px-4 py-3 text-left font-semibold">记录 ID</th>
-              <th class="px-4 py-3 text-left font-semibold">操作</th>
+                  <th class="px-4 py-3 text-left font-semibold">姓名</th>
+                  <th class="px-4 py-3 text-left font-semibold">关系</th>
+                  <th class="px-4 py-3 text-left font-semibold">最近见面</th>
+                  <th class="px-4 py-3 text-left font-semibold">距离今天</th>
+                  <th class="px-4 py-3 text-left font-semibold">备注</th>
+                  <th class="px-4 py-3 text-left font-semibold">记录 ID</th>
+                  <th class="px-4 py-3 text-left font-semibold">操作</th>
                 </tr>
               </thead>
               <tbody
@@ -253,9 +253,7 @@
 
         <section class="card p-6 sm:p-8 space-y-6">
           <div class="space-y-4">
-            <h2 class="text-2xl font-semibold text-slate-900">
-              查询单个好友
-            </h2>
+            <h2 class="text-2xl font-semibold text-slate-900">查询单个好友</h2>
             <p class="text-slate-500 text-sm">
               输入记录 ID，快速查看详细备注。
             </p>
@@ -301,7 +299,7 @@ curl -X POST "http://api.tczhong.com/friend/" \
   -d '{"name":"Alice","relationship":"同事","last_meet":"2024-05-12T19:00:00+08:00"}'
 
 # 更新好友
-curl -X PUT "http://api.tczhong.com/friend/{id}" \
+curl -X PUT "https://api.tczhong.com/friend/{id}" \
   -H "Content-Type: application/json" \
   -d '{"notes":"2024-06-01 约晚餐","last_meet":"2024-06-01T20:30:00+08:00"}'</code></pre>
         </section>
@@ -336,9 +334,7 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
           </h3>
         </div>
         <form id="edit-form" class="space-y-4">
-          <label
-            class="flex flex-col text-sm font-medium text-slate-600 gap-1"
-          >
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
             关系
             <input
               type="text"
@@ -347,9 +343,7 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
               placeholder="同事 / 同学 / 家人"
             />
           </label>
-          <label
-            class="flex flex-col text-sm font-medium text-slate-600 gap-1"
-          >
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
             备注
             <textarea
               id="edit-notes"
@@ -358,9 +352,7 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
               placeholder="记录见面内容或提醒"
             ></textarea>
           </label>
-          <label
-            class="flex flex-col text-sm font-medium text-slate-600 gap-1"
-          >
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
             最近见面时间
             <input
               type="datetime-local"
@@ -405,9 +397,8 @@ curl -X PUT "http://api.tczhong.com/friend/{id}" \
       const editForm = document.getElementById("edit-form");
       const editNotesInput = document.getElementById("edit-notes");
       const editLastMeetInput = document.getElementById("edit-last-meet");
-      const editRelationshipInput = document.getElementById(
-        "edit-relationship"
-      );
+      const editRelationshipInput =
+        document.getElementById("edit-relationship");
       const editNameDisplay = document.getElementById("edit-name-display");
       let latestFriends = [];
       let editingFriendId = null;
