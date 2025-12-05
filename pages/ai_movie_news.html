@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Movie News API 模式</title>
+    <link rel="icon" type="image/svg+xml" href="../icons/home.svg" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../auth.js" defer></script>
+    <style>
+      body {
+        font-family: "Inter", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        background: radial-gradient(circle at 10% 20%, #f1f5f9, #f8fafc 35%),
+          linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+        color: #0f172a;
+      }
+      .card {
+        background: #ffffff;
+        border-radius: 1.25rem;
+        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 36px 70px rgba(15, 23, 42, 0.16);
+      }
+      code,
+      pre {
+        font-family: "JetBrains Mono", "Fira Code", SFMono-Regular, Menlo, monospace;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen px-4 py-10 sm:px-8">
+    <header class="max-w-5xl mx-auto text-center mb-10 space-y-3">
+      <p
+        class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-700 uppercase tracking-wide"
+      >
+        AI Movie News API 模式
+      </p>
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">
+        获取最新 AI 电影新闻并同步推送状态
+      </h1>
+      <p
+        class="text-slate-600 leading-relaxed text-base sm:text-lg max-w-3xl mx-auto"
+      >
+        使用
+        <code class="px-2 py-1 bg-slate-100 rounded-md text-sm"
+          >https://api.tczhong.com/ai_movie_news</code
+        >
+        拉取最近新闻，检查正文、配图、外链，并在推送到 Discord 后更新
+        push_to_discord_status。
+      </p>
+    </header>
+
+    <main class="max-w-6xl mx-auto space-y-8">
+      <section class="card p-6 sm:p-8 space-y-5">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 class="text-xl font-semibold text-slate-900">拉取与处理新闻</h3>
+            <p class="text-slate-600 text-sm">
+              输入回溯天数，直接调用 /recent；选中需要推送的新闻，一键设为 pending。
+            </p>
+          </div>
+          <div class="flex gap-3">
+            <button
+              id="refresh-btn"
+              class="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-white text-sm font-semibold shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5"
+            >
+              拉取新闻
+            </button>
+            <button
+              id="pending-btn"
+              class="inline-flex items-center justify-center gap-2 rounded-full bg-amber-600 px-4 py-2 text-white text-sm font-semibold shadow-lg shadow-amber-600/20 transition hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled
+            >
+              设为 pending
+            </button>
+          </div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-3">
+          <label class="flex flex-col text-sm font-medium text-slate-600 gap-1">
+            回溯天数（days）
+            <input
+              type="number"
+              id="days-input"
+              min="1"
+              placeholder="默认 5"
+              class="rounded-xl border border-slate-200 px-3 py-2 text-base focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <div class="sm:col-span-2 text-sm text-slate-500">
+            基础 URL：
+            <code class="px-2 py-1 bg-slate-100 rounded-md text-sm"
+              >https://api.tczhong.com/ai_movie_news/recent</code
+            >
+            ，可在下方直接查看正文、外链及图片。
+          </div>
+        </div>
+
+        <div
+          id="message"
+          class="hidden rounded-lg border px-4 py-3 text-sm font-semibold"
+        ></div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-semibold text-slate-700">
+              最近一次响应（最多展示 10 条，可复选）
+            </p>
+            <p id="selected-count" class="text-xs text-slate-500"></p>
+          </div>
+          <div
+            id="news-list"
+            class="grid gap-4 sm:grid-cols-2"
+            aria-live="polite"
+          >
+            <div
+              class="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-slate-400 text-sm"
+            >
+              暂无数据，点击“拉取新闻”触发请求。
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const baseUrl = "https://api.tczhong.com/ai_movie_news";
+      const refreshBtn = document.getElementById("refresh-btn");
+      const pendingBtn = document.getElementById("pending-btn");
+      const daysInput = document.getElementById("days-input");
+      const messageEl = document.getElementById("message");
+      const newsList = document.getElementById("news-list");
+      const selectedCountEl = document.getElementById("selected-count");
+      let currentItems = [];
+      let selectedIds = new Set();
+
+      function showMessage(type, text) {
+        messageEl.textContent = text;
+        messageEl.classList.remove(
+          "hidden",
+          "border-emerald-200",
+          "bg-emerald-50",
+          "text-emerald-700",
+          "border-rose-200",
+          "bg-rose-50",
+          "text-rose-700"
+        );
+        if (type === "success") {
+          messageEl.classList.add(
+            "border-emerald-200",
+            "bg-emerald-50",
+            "text-emerald-700"
+          );
+        } else {
+          messageEl.classList.add("border-rose-200", "bg-rose-50", "text-rose-700");
+        }
+      }
+
+      function parseLinks(links) {
+        if (!links) return [];
+        if (Array.isArray(links)) return links;
+        // Try JSON string first
+        try {
+          const parsed = JSON.parse(links);
+          if (Array.isArray(parsed)) return parsed;
+        } catch (e) {
+          // ignore
+        }
+        // Fallback: split by whitespace/newline
+        return String(links)
+          .split(/\s+/)
+          .map((s) => s.trim().replace(/^"+|"+$/g, ""))
+          .filter(Boolean);
+      }
+
+      function pickImageUrl(links, imgUrl) {
+        if (imgUrl) return imgUrl;
+        const candidates = parseLinks(links);
+        const byExtension = candidates.find((url) =>
+          /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url)
+        );
+        if (byExtension) return byExtension;
+        const pbs = candidates.find((url) => url.includes("pbs.twimg.com"));
+        return pbs || "";
+      }
+
+      function renderNews(items) {
+        currentItems = items || [];
+        selectedIds = new Set();
+        pendingBtn.disabled = true;
+        selectedCountEl.textContent = "";
+
+        if (!items || items.length === 0) {
+          newsList.innerHTML =
+            '<div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-slate-400 text-sm">暂无数据，尝试调整回溯天数。</div>';
+          return;
+        }
+
+        const limited = items.slice(0, 10);
+        newsList.innerHTML = limited
+          .map((item) => {
+            const date = item.published_at || "无发布时间";
+            const status = item.push_to_discord_status || "未标记";
+            const links = parseLinks(item.links);
+            const img = pickImageUrl(links, item.img_url);
+            return `<article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-xs font-semibold text-slate-500">${date}</p>
+                  <p class="text-xs text-slate-500 mt-1">ID: ${item.id ?? "-"}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-700">${status}</span>
+                  <input type="checkbox" class="h-4 w-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500" data-id="${item.id}" aria-label="选择 ID ${item.id}">
+                </div>
+              </div>
+              <div class="space-y-2">
+                <h4 class="text-lg font-semibold text-slate-900">${item.title || "无标题"}</h4>
+                <p class="text-sm text-slate-600 whitespace-pre-line">${item.content || "无正文"}</p>
+                ${
+                  links.length
+                    ? `<div class="flex flex-wrap gap-2 text-xs">${
+                        links
+                          .map(
+                            (link, idx) =>
+                              `<a class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-1 text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition" href="${link}" target="_blank" rel="noopener noreferrer">链接 ${idx + 1}</a>`
+                          )
+                          .join("")
+                      }</div>`
+                    : ""
+                }
+                ${
+                  img
+                    ? `<div class="overflow-hidden rounded-lg border border-slate-100 bg-slate-50"><img src="${img}" alt="新闻配图" class="w-full object-cover max-h-64"></div>`
+                    : ""
+                }
+              </div>
+            </article>`;
+          })
+          .join("");
+
+        newsList.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+          checkbox.addEventListener("change", () => {
+            const id = Number(checkbox.dataset.id);
+            if (checkbox.checked) {
+              selectedIds.add(id);
+            } else {
+              selectedIds.delete(id);
+            }
+            pendingBtn.disabled = selectedIds.size === 0;
+            selectedCountEl.textContent =
+              selectedIds.size > 0 ? `已选 ${selectedIds.size} 条` : "";
+          });
+        });
+      }
+
+      async function fetchRecent() {
+        const daysValue = Number(daysInput.value);
+        const queryDays = Number.isFinite(daysValue) && daysValue > 0 ? daysValue : undefined;
+        showMessage("success", "请求中...");
+        newsList.innerHTML =
+          '<div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-slate-400 text-sm">加载中...</div>';
+
+        try {
+          const url = queryDays
+            ? `${baseUrl}/recent?days=${encodeURIComponent(queryDays)}`
+            : `${baseUrl}/recent`;
+          const res = await fetch(url);
+          const data = await res.json();
+          if (!res.ok || data.status === "error") {
+            throw new Error(data.message || "请求失败");
+          }
+          renderNews(data.data || []);
+          showMessage("success", `获取成功（lookback_days=${data.lookback_days || queryDays || 5}）`);
+        } catch (error) {
+          console.error(error);
+          showMessage(
+            "error",
+            `请求出错，可能是跨域或网络问题：${error.message || "Unknown error"}`
+          );
+        }
+      }
+
+      async function setPending() {
+        if (selectedIds.size === 0) return;
+        pendingBtn.disabled = true;
+        showMessage("success", "提交中...");
+        try {
+          const res = await fetch(`${baseUrl}/push_status/pending`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: Array.from(selectedIds) }),
+          });
+          const data = await res.json();
+          if (!res.ok || data.status === "error") {
+            throw new Error(data.message || "更新失败");
+          }
+          showMessage("success", `已设为 pending：${(data.updated_ids || []).join(", ")}`);
+          // Refresh to show updated status
+          fetchRecent();
+        } catch (error) {
+          console.error(error);
+          pendingBtn.disabled = false;
+          showMessage("error", `更新失败：${error.message || "Unknown error"}`);
+        }
+      }
+
+      refreshBtn.addEventListener("click", fetchRecent);
+      pendingBtn.addEventListener("click", setPending);
+    </script>
+  </body>
+</html>
